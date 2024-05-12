@@ -1,0 +1,255 @@
+﻿@using Astrum.Storage.Services;
+@using Astrum.Storage.ViewModels;
+@inject IInventoryItemsService _service
+@inject IUserProfileService _profileService
+@inject ITemplatesService _templateService
+@inject IMapper _mapper
+@inject IFileStorage _fileStorage;
+@inject ILogAdminService _logger;
+
+<Button Type="Primary" OnClick="ShowModal">Редактировать</Button>
+
+<Modal AfterClose="async () => { if (OnInventoryItemEdited.HasDelegate)
+    {
+        await OnInventoryItemEdited.InvokeAsync();
+    }}" Width="1000" Visible="_visible" OnCancel="@HandleCancel" Footer="null">
+    <h3 class="text-center">Редактирование товара товара</h3>
+    <Form Model="mappedInventoryItem" OnFinish="OnFinish" ValidateMode="FormValidateMode.Rules">
+        <FormItem Required Label="Название товара" Style="margin-top: 30px;"
+                  Rules=@(new FormValidationRule[] { new FormValidationRule { Required = true, Message = "Название обязательно!" } })>
+            <Input BindOnInput Placeholder="название" @bind-Value="@mappedInventoryItem.Model"></Input>
+        </FormItem>
+
+        <FormItem Required Label="Серийный номер" Style="margin-top: 30px;"
+                  Rules=@(new FormValidationRule[] { new FormValidationRule { Required = true, Message = "Серийный номер обязателен!" } })>
+            <Input BindOnInput Placeholder="серийный номер" @bind-Value="@mappedInventoryItem.SerialNumber"></Input>
+        </FormItem>
+
+        <FormItem Required Label="Состояние" Style="margin-top: 30px;">
+            <Progress Percent="@mappedInventoryItem.State">
+            </Progress>
+            <ButtonGroup>
+                <Button Disabled="_increaseDisabled" OnClick="IncreaseState" Icon="@IconType.Outline.MinusSquare"></Button>
+                <Button Disabled="_declineDisabled" OnClick="DeclineState" Icon="@IconType.Outline.PlusSquare"></Button>
+            </ButtonGroup>
+        </FormItem>
+
+        <FormItem Required Label="Статус товара" Style="margin: 20px 0;">
+            <EnumSelect TEnum="Status" @bind-Value=mappedInventoryItem.Status />
+        </FormItem>
+
+        <FormItem Required Label="Пользователь" Style="margin: 20px 0;">
+            <Select TItem="UserProfileSummary"
+                    TItemValue="Guid?"
+                    LabelName="@nameof(UserProfileSummary.NameWithSurname)"
+                    ValueName="@nameof(UserProfileSummary.UserId)"
+            @bind-Value="@mappedInventoryItem.UserId"
+                    DataSource="Users"
+                    EnableSearch />
+        </FormItem>
+
+        <FormItem Label="Категория" Style="margin: 20px 0;">
+            <Select TItem="TemplateView"
+                    TItemValue="Guid?"
+                    LabelName="@nameof(TemplateView.Title)"
+                    ValueName="@nameof(TemplateView.Id)"
+                    @bind-Value="@mappedInventoryItem.TemplateId"
+                    DefaultValue="null"
+                    DataSource="Templates"
+                    EnableSearch
+                    OnSelectedItemChanged="@(async template => await GetCharacteristicsSelectedTemplate(template))">
+            </Select>
+        </FormItem>
+
+        <FormItem Required Label="Публичность товара">
+            <Checkbox @bind-Value="@InventoryItem.IsPublic" />
+        </FormItem>
+
+        <FormItem Label="Изображение товара">
+            <InputFile id="fileInput" OnChange="UploadFile" hidden />
+            <Upload Name="file" FileList="fileList">
+                <label class="ant-btn" for="fileInput">
+                    <Icon Type="upload" />
+                    Прикрепить файл
+                </label>
+            </Upload>
+            <Spin Style="margin-top: 10px; margin-bottom: 10px;" Spinning=@_fileLoading></Spin>
+        </FormItem>
+
+        <UpdateCharacteristics Type=@typeof(InventoryItemUpdateRequest)
+                               Characteristics="@mappedInventoryItem.Characteristics"></UpdateCharacteristics>
+
+        <FormItem Required>
+            <Button Type="@ButtonType.Primary" HtmlType="submit" Disabled="_updateButtonDisabled">
+                Редактировать
+            </Button>
+        </FormItem>
+    </Form>
+</Modal>
+
+@code {
+    [Parameter] public EventCallback OnInventoryItemEdited { get; set; }
+    [Parameter] public InventoryItemView InventoryItem { get; set; }
+
+    private InventoryItemUpdateRequest mappedInventoryItem = new();
+    List<UserProfileSummary> Users { get; set; } = new List<UserProfileSummary>();
+    List<TemplateView> Templates { get; set; } = new List<TemplateView>();
+    public TemplateView? SelectedTemplate { get; set; }
+    public bool _declineDisabled;
+    public bool _increaseDisabled;
+    public bool _visible;
+    public bool _fileLoading;
+    public FileForm Image { get; set; }
+    List<UploadFileItem> fileList = new List<UploadFileItem>();
+    public bool _updateButtonDisabled =>
+    string.IsNullOrWhiteSpace(InventoryItem.Model) ||
+    string.IsNullOrWhiteSpace(InventoryItem.SerialNumber);
+
+    async Task ShowModal()
+    {
+        _visible = true;
+        await GetUsers();
+        await GetTemplates();
+        if (InventoryItem.PictureId != null)
+        {
+            var file = await _fileStorage.GetFile(InventoryItem.PictureId.Value);
+            fileList = new List<UploadFileItem>()
+            {
+                new UploadFileItem()
+                {
+                FileName = file.FileName,
+                }
+            };
+        }
+        if (InventoryItem.TemplateId != null)
+        {
+            SelectedTemplate = Templates.FirstOrDefault(template => template.Id == InventoryItem.TemplateId);
+        }
+        mappedInventoryItem = _mapper.Map<InventoryItemUpdateRequest>(InventoryItem);
+        ValidateDeclineState();
+        ValidateIncreaseState();
+    }
+
+    private void HandleCancel()
+    {
+        _visible = false;
+    }
+
+    private async Task UploadFile(InputFileChangeEventArgs e)
+    {
+        _fileLoading = true;
+        StateHasChanged();
+
+        var file = e.File;
+        using var memoryStream = new MemoryStream();
+        await file.OpenReadStream(e.File.Size).CopyToAsync(memoryStream);
+        var imageBytes = memoryStream.ToArray();
+
+        Image = new FileForm()
+            {
+                ContentType = file.ContentType,
+                FileName = file.Name,
+                FileBytes = imageBytes,
+            };
+
+        fileList = new List<UploadFileItem>()
+        {
+            new UploadFileItem()
+            {
+                FileName = file.Name,
+                Size = file.Size
+            }
+        };
+
+        _fileLoading = false;
+        mappedInventoryItem.Image = Image;
+        StateHasChanged();
+    }
+
+    private async Task OnFinish(EditContext context)
+    {
+        var model = context.Model as InventoryItemUpdateRequest;
+        var result = await _service.Update(InventoryItem.Id, model);
+        _logger.Log(model, result, "Товар обновлён.", Logging.Entities.ModuleAstrum.Inventory);
+        _visible = false;
+    }
+
+    async Task GetUsers()
+    {
+        Users = await _profileService.GetAllUsersProfilesSummariesAsync();
+    }
+
+    async Task GetTemplates()
+    {
+        Templates = await _templateService.GetTemplates();
+    }
+
+    async Task GetCharacteristicsSelectedTemplate(object template)
+    {
+        var selectedTemplate = template as TemplateView;
+        if (SelectedTemplate != null)
+        {
+            InventoryItem.TemplateId = SelectedTemplate.Id;
+        }
+        SelectedTemplate = await _templateService.GetTemplateById(selectedTemplate.Id);
+        if (SelectedTemplate.Id != InventoryItem.TemplateId)
+        {
+            if (SelectedTemplate != null)
+            {
+                var characteristics = _mapper.Map<List<CharacteristicUpdateRequest>>(SelectedTemplate.Characteristics);
+                var inventoryItemsCharacteristics = _mapper.Map<List<CharacteristicUpdateRequest>>(InventoryItem.Characteristics.Where(characteristic => characteristic.IsCustomField == true)).ToList();
+                mappedInventoryItem.Characteristics = characteristics;
+                mappedInventoryItem.Characteristics.AddRange(inventoryItemsCharacteristics);
+                mappedInventoryItem.TemplateId = SelectedTemplate.Id;
+                if (SelectedTemplate.PictureId != null)
+                {
+                    var file = await _fileStorage.GetFile(SelectedTemplate.PictureId.Value);
+                    mappedInventoryItem.Image = file;
+                    fileList = new List<UploadFileItem>()
+                    {
+                        new UploadFileItem()
+                        {
+                            FileName = file.FileName
+                        }
+                    };
+                }
+            }
+        }
+    }
+
+    void DeclineState()
+    {
+        mappedInventoryItem.State += 5;
+        ValidateDeclineState();
+    }
+
+    void ValidateDeclineState()
+    {
+        if (mappedInventoryItem.State == 100)
+        {
+            _declineDisabled = true;
+        }
+        else if (mappedInventoryItem.State != 0)
+        {
+            _increaseDisabled = false;
+        }
+    }
+
+    void IncreaseState()
+    {
+        mappedInventoryItem.State -= 5;
+        ValidateIncreaseState();
+    }
+
+    void ValidateIncreaseState()
+    {
+        if (mappedInventoryItem.State == 0)
+        {
+            _increaseDisabled = true;
+        }
+        else if (mappedInventoryItem.State != 100)
+        {
+            _declineDisabled = false;
+        }
+    }
+}

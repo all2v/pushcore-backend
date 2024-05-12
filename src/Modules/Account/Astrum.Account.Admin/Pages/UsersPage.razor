@@ -1,0 +1,13 @@
+﻿@page "/admin/users"
+@inject IUserProfileService _userProfileService
+
+<UsersTable Users="Users" />
+
+@code {
+    List<UserProfileSummary> Users = new List<UserProfileSummary>();
+
+    protected async override Task OnInitializedAsync()
+    {
+        Users = await _userProfileService.GetAllUsersProfilesSummariesAsync();
+    }
+}

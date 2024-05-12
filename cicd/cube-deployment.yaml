@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: astrum-back
+  namespace: astrum
+  labels:
+    app: astrum-back
+    env: Production
+    owner: MikhailBulatov
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      project: astrum-back
+  template:
+    metadata:
+      labels:
+        project: astrum-back
+    spec:
+      containers:
+        - name: api
+          image: hub.66bit.ru/urfu/pushcore-backend:latest
+          ports:
+            - containerPort: 80
+          env:
+          - name: ASPNETCORE_ENVIRONMENT
+            value: Production
+      imagePullSecrets:
+        - name: astrum-secret
+      dnsConfig:
+        options:
+          - name: ndots
+            value: "2"

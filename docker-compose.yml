@@ -1,0 +1,40 @@
+version: '3.8'
+services:
+  application-db:
+    image: postgres:14.1-alpine
+    restart: unless-stopped
+  #  event-store-db:
+  #    image: postgres:14.1-alpine
+  #    restart: unless-stopped
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: 'rabbitmq'
+  # file-storage-s3:
+  #   image: localstack/localstack:latest
+  #   container_name: file-storage-s3
+  keycloak-db:
+    image: postgres:14.1-alpine
+    restart: unless-stopped
+
+  keycloak:
+    image: jboss/keycloak:${KEYCLOAK_VERSION}
+    restart: unless-stopped
+    depends_on:
+      - keycloak-db
+       
+  file-storage-s3:
+    image: minio/minio:latest
+    container_name: minio
+    restart: always
+  
+  api:
+    #image builded by gitlab ci
+    image: boolbl4/pushcore-backend:latest
+    restart: unless-stopped
+    depends_on:
+      - application-db
+      - rabbitmq
+  frontend:
+    image: lighthouse9/pushcore-frontend:latest
+    stdin_open: true
+    command: npm start

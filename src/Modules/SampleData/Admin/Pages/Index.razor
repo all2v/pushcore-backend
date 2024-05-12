@@ -1,0 +1,11 @@
+﻿@page "/admin/sample-data"
+@inject ISampleDataService _simpleDataService
+<h3>SampleData</h3>
+<Button Style="margin-bottom: 20px;" Type="Primary" OnClick="ShowModal">Пересоздать данные</Button>
+<ConextsTable></ConextsTable>
+@code {
+    private void ShowModal()
+    {
+        _simpleDataService.ResetToSampleData();
+    }
+}

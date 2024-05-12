@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+		<TargetFramework>net7.0</TargetFramework> 
+		<TargetFrameworkVersion>7.0</TargetFrameworkVersion>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Application\Astrum.Example.Application.csproj" />
+        <ProjectReference Include="..\Backoffice\Astrum.Example.Backoffice.csproj" />
+        <ProjectReference Include="..\DomainServices\Astrum.Example.DomainServices.csproj" />
+        <ProjectReference Include="..\Infrastructure\Astrum.Example.Infrastructure.csproj" />
+        <ProjectReference Include="..\Persistence\Astrum.Example.Persistence.csproj" />
+        <ProjectReference Include="..\..\..\Infrastructure\Astrum.Infrastructure\Astrum.Infrastructure.csproj" />
+        <ProjectReference Include="..\..\..\SharedLib\Persistence\Astrum.SharedLib.Persistence.csproj" />
+    </ItemGroup>
+
+</Project>

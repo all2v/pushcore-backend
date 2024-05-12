@@ -1,0 +1,17 @@
+﻿@page "/admin/market"
+@using Astrum.Market.Admin.Components
+
+<PageTitle>Магазин</PageTitle>
+
+<Tabs @bind-ActiveKey="@activeKey" Animated>
+    <TabPane Tab="Таблица товаров" Key="1">
+        <ProductTable />
+    </TabPane>
+    <TabPane Tab="Таблица заказов" Key="2">
+        <OrderTable/>
+    </TabPane>
+</Tabs>
+
+@code {
+    string activeKey { get; set; } = "1";
+}

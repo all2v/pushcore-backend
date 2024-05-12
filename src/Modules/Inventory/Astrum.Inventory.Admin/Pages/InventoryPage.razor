@@ -1,0 +1,16 @@
+﻿@page "/admin/inventory"
+
+<PageTitle>Инвентарь</PageTitle>
+
+<Tabs @bind-ActiveKey="@activeKey" Animated>
+    <TabPane Tab="Таблица товаров" Key="1">
+        <InventoryItemsPage />
+    </TabPane>
+    <TabPane Tab="Таблица категорий" Key="2">
+        <TemplatesPage/>
+    </TabPane>
+</Tabs>
+
+@code {
+    string activeKey { get; set; } = "1";
+}

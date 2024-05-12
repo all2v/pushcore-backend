@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Application\Astrum.IdentityServer.Application.csproj" />
+    <ProjectReference Include="..\Backoffice\Astrum.IdentityServer.Backoffice.csproj" />
+    <ProjectReference Include="..\DomainServices\Astrum.IdentityServer.DomainServices.csproj" />
+    <ProjectReference Include="..\Infrastructure\Astrum.IdentityServer.Infrastructure.csproj" />
+    <ProjectReference Include="..\Persistence\Astrum.IdentityServer.Persistence.csproj" />
+    <ProjectReference Include="..\..\..\Infrastructure\Astrum.Infrastructure\Astrum.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\..\SharedLib\Persistence\Astrum.SharedLib.Persistence.csproj" />
+  </ItemGroup>
+</Project>

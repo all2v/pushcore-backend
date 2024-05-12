@@ -1,0 +1,14 @@
+﻿@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider _authStateProvider
+
+<h2>You are not authorized to see this content!</h2>
+
+@code {
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        //var state = await _authStateProvider.GetAuthenticationStateAsync();
+        //var returnUrl = Uri.EscapeDataString(NavigationManager.Uri);
+        //NavigationManager.NavigateTo($"/admin/signin", true);/*?returnUrl={returnUrl}*/
+        //NavigationManager.NavigateTo($"/", true);
+    } 
+}

@@ -1,0 +1,65 @@
+﻿@inject IPositionsService _positionService
+@inject ILogAdminService _logger
+
+<Button Style="margin-bottom: 20px;" Type="Primary" OnClick="ShowModal">Добавить должность</Button>
+
+<Modal Visible="_visible" OnCancel="@HandleCancel" Footer="null">
+    <h3 class="text-center">Добавление должности</h3>
+    <Form Model="Position" OnFinish="OnFinish">
+        <FormItem Style="margin-top: 30px;">
+            <Input Placeholder="Название должности" @bind-Value="@Position.Name" OnInput="((ChangeEventArgs name) => OnChange(name))"></Input>
+        </FormItem>
+        <FormItem>
+            <Button Type="@ButtonType.Primary" HtmlType="submit" Disabled="@_createButtonDisabled">
+                Создать
+            </Button>
+        </FormItem>
+        @if (PositionAlreadyExists)
+        {
+            <p style="color: #ff4d4f">Такая должность уже существует!</p>
+        }
+    </Form>
+</Modal>
+
+@code {
+    [Parameter] public EventCallback OnPositionCreated { get; set; }
+    public bool PositionAlreadyExists;
+    public bool _visible;
+    public bool _createButtonDisabled;
+    public PositionForm Position = new PositionForm();
+
+    private void ShowModal()
+    {
+        _visible = true;
+        _createButtonDisabled = true;
+        PositionAlreadyExists = false;
+        Position = new PositionForm();
+    }
+
+    private void HandleCancel()
+    {
+        _visible = false;
+    }
+
+    private async Task OnFinish(EditContext context)
+    {
+        var model = context.Model as PositionForm;
+        if (!String.IsNullOrWhiteSpace(model?.Name))
+        {
+            if (await _positionService.PositionAlreadyExists(model.Name))
+            {
+                PositionAlreadyExists = true;
+                return;
+            }
+            var result = await _positionService.CreatePosition(model);
+            _logger.Log(model, result, "Создана должность.", Logging.Entities.ModuleAstrum.Account);
+            await OnPositionCreated.InvokeAsync();
+            _visible = false;
+        }
+    }
+
+    private void OnChange(ChangeEventArgs name)
+    {
+        _createButtonDisabled = String.IsNullOrWhiteSpace(name.Value.ToString());
+    }
+}

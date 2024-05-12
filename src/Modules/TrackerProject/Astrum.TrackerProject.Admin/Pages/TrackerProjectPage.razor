@@ -1,0 +1,39 @@
+﻿@page "/admin/tracker"
+
+@using AntDesign
+@using Astrum.TrackerProject.Application.Services
+@using Astrum.TrackerProject.Admin.Components
+@using Microsoft.JSInterop
+
+@inject ISynchronisationService _synchronisationService
+@inject ILogAdminService _logger;
+@inject IJSRuntime _jsRuntime
+
+@if (loading)
+{
+    <Alert Type="@AlertType.Info"
+           Message="Синхронизация может занять некоторое время"
+           ShowIcon="true"
+           Banner />
+    <br />
+}
+
+<Button Loading="@loading" Type="@ButtonType.Primary" OnClick="Synchronise">Синхронизировать проекты</Button>
+<br />
+<br />
+<ExternalUserTable SynchronizationProcessing="loading"/>
+
+@code {
+    private bool loading = false;
+
+    private async Task Synchronise()
+    {
+        loading = true;
+        await _jsRuntime.InvokeAsync<IJSObjectReference>(
+            "import", "./_content/Astrum.TrackerProject.Admin/exampleJsInterop.js");
+        await _synchronisationService.SynchroniseAll();
+        var result = SharedLib.Common.Results.Result.Success("Всё синхронизировано.");
+        _logger.Log("Тело пустое", result, "Всё синхронизировано.", Logging.Entities.ModuleAstrum.TrackerProject);
+        loading = false;
+    }
+}

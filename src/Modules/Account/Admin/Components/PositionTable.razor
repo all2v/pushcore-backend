@@ -1,0 +1,34 @@
+﻿@inject IPositionsService _positionService
+@inject ILogAdminService _logger
+
+<Table DataSource="Positions">
+    <RowTemplate Context="Position">
+        <Column TData="string" Title="Название должности" DataIndex="@nameof(PositionForm.Name)">
+            @Position.Name
+        </Column>
+        <ActionColumn Width="100">
+            <Space>
+                <SpaceItem>
+                    <UpdatePosition Position="@Position" OnPositionEdited="OnPositionsChange" />
+                </SpaceItem>
+                <SpaceItem>
+                    <Popconfirm Title="Удалить должность?" OnConfirm="async () => await DeletePosition(Position.Id)" OkText="Да" CancelText="Нет">
+                        <Button>Удалить</Button>
+                    </Popconfirm>
+                </SpaceItem>
+            </Space>
+        </ActionColumn>
+    </RowTemplate>
+</Table>
+
+@code {
+    [Parameter] public List<PositionForm> Positions { get; set; }
+    [Parameter] public EventCallback OnPositionsChange { get; set; }
+
+    public async Task DeletePosition(Guid positionId)
+    {
+        var result = await _positionService.DeletePosition(positionId);
+        _logger.Log(positionId, result, "Удалена должность.", Logging.Entities.ModuleAstrum.Account);
+        await OnPositionsChange.InvokeAsync();
+    }
+}

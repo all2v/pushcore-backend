@@ -1,0 +1,101 @@
+﻿@using AntDesign
+@using Astrum.Market.Services
+@using Astrum.Market.ViewModels
+@using AutoMapper
+
+@inject IMarketOrderService _marketOrderService
+@inject IMapper _mapper
+@inject ILogAdminService _logger;
+
+@{
+    RenderFragment footer = @<Template>
+                                @if (OrderProduct.Status == OrderStatus.Ordered && Order.Status == OrderStatus.Ordered)
+                                {
+                                    <Button OnClick="@(() => UpdateOrderProduct(OrderStatus.Accepted))"
+                                            Type="primary"
+                                            Loading="@_loading">
+                                        Принять
+                                    </Button>
+                                    <Button OnClick="@(() => UpdateOrderProduct(OrderStatus.Cancelled))">Отклонить</Button>
+                                }
+                            </Template>;
+}
+
+<Button Type="Primary" OnClick="ShowModal">Подробнее</Button>
+
+@if(_visible)
+{
+    <Modal Title="@(OrderProduct.Product.Name)"
+           Visible="true"
+           Footer="@footer"
+           OnCancel="@CloseModal">
+        <img src="@OrderProduct.Product.CoverUrl" width="200"/>
+        <p>
+            <Text Strong>Краткое описание:</Text>
+            <Text>@OrderProduct.Product.Summary</Text>
+        </p>
+        <p>
+            <Text Strong>Подробное описание:</Text>
+            <Text>@OrderProduct.Product.Description</Text>
+        </p>
+        <p>
+            <Text Strong>Цена:</Text>
+            <Text>@OrderProduct.Product.Price</Text>
+        </p>
+        <p>
+            <Text Strong>Количество:</Text>
+            <Text>@OrderProduct.Amount</Text>
+        </p>
+        @if ((bool) !OrderProduct.Product.IsInfinite)
+        {
+            <p>
+                <Text Strong>Остаток:</Text>
+                <Text>@OrderProduct.Product.Remain</Text>
+            </p>
+        }
+        
+    </Modal>
+}
+
+@code {
+    [Parameter] public MarketOrderFormResponse Order { get; set; } = new MarketOrderFormResponse();
+    [Parameter] public OrderProductFormResponse OrderProduct { get; set; } = new OrderProductFormResponse();
+    [Parameter] public EventCallback OnChange { get; set; }
+
+    private MarketOrderFormRequest order { get; set; } = new MarketOrderFormRequest();
+    private OrderProductFormRequest orderProduct { get; set; } = new OrderProductFormRequest();
+
+    bool _visible = false;
+    bool _loading = false;
+
+    protected override Task OnInitializedAsync()
+    {
+        _mapper.Map(Order, order);
+        orderProduct = order.OrderProducts.FirstOrDefault(p => p.Id == OrderProduct.Id);
+        return Task.CompletedTask;
+    }
+
+    private void ShowModal()
+    {
+        _visible = true;
+    }
+
+    private async Task UpdateOrderProduct(OrderStatus status)
+    {
+        orderProduct.Status = status;
+        var result = await _marketOrderService.Update(Order.Id, order);
+        CloseModal();
+        if (OnChange.HasDelegate)
+        {
+            await OnChange.InvokeAsync();
+        }
+        _logger.Log(order, result, "Статус продукта обновлён.", Logging.Entities.ModuleAstrum.Market);
+    }
+
+    private void CloseModal()
+    {
+        _visible = false;
+        StateHasChanged();
+    }
+
+}

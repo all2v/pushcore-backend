@@ -1,0 +1,231 @@
+﻿@using Astrum.Storage.Services;
+@using Astrum.Storage.ViewModels;
+@inject IInventoryItemsService _service
+@inject IUserProfileService _profileService
+@inject ITemplatesService _templateService
+@inject IMapper _mapper
+@inject ILogAdminService _logger;
+@inject IFileStorage _fileStorage
+
+<Button Style="margin-bottom: 20px;" Type="Primary" OnClick="ShowModal">Добавить товар</Button>
+
+<Modal Width="1000" Visible="_visible" OnCancel="@HandleCancel" Footer="null">
+    <h3 class="text-center">Добавление товара</h3>
+    <Form Model="InventoryItem" OnFinish="OnFinish" ValidateMode="FormValidateMode.Rules">
+        <FormItem Required Label="Название товара" Style="margin-top: 30px;"
+                  Rules=@(new FormValidationRule[] { new FormValidationRule { Required = true, Message = "Название обязательно!" } })>
+            <Input BindOnInput Placeholder="название" @bind-Value="@InventoryItem.Model"></Input>
+        </FormItem>
+
+        <FormItem Required Label="Серийный номер" Style="margin-top: 30px;"
+                  Rules=@(new FormValidationRule[] { new FormValidationRule { Required = true, Message = "Серийный номер обязателен!" } })>
+            <Input BindOnInput Placeholder="серийный номер" @bind-Value="@InventoryItem.SerialNumber"></Input>
+        </FormItem>
+
+        <FormItem Required Label="Состояние" Style="margin-top: 30px;">
+            <Progress Percent="@InventoryItem.State">
+            </Progress>
+            <ButtonGroup>
+                <Button Disabled="_increaseDisabled" OnClick="IncreaseState" Icon="@IconType.Outline.MinusSquare"></Button>
+                <Button Disabled="_declineDisabled" OnClick="DeclineState" Icon="@IconType.Outline.PlusSquare"></Button>
+            </ButtonGroup>
+        </FormItem>
+
+        <FormItem Required Label="Статус товара" Style="margin: 20px 0;">
+            <EnumSelect TEnum="Status" @bind-Value=InventoryItem.Status />
+        </FormItem>
+
+        <FormItem Label="Пользователь" Style="margin: 20px 0;">
+            <Select TItem="UserProfileSummary"
+                    TItemValue="Guid?"
+                    LabelName="@nameof(UserProfileSummary.NameWithSurname)"
+                    ValueName="@nameof(UserProfileSummary.UserId)"
+                    @bind-Value="@InventoryItem.UserId"
+                    DataSource="Users"
+                    EnableSearch />
+        </FormItem>
+
+        <FormItem Label="Категория" Style="margin: 20px 0;">
+            <Select TItem="TemplateView"
+                    TItemValue="Guid?"
+                    LabelName="@nameof(TemplateView.Title)"
+                    ValueName="@nameof(TemplateView.Id)"
+                    @bind-Value="@InventoryItem.TemplateId"
+                    DataSource="Templates"
+                    DefaultValue="DefaultTemplate.Id"
+                    EnableSearch
+                    OnSelectedItemChanged="@(async template => await GetCharacteristicsSelectedTemplate(template))">
+            </Select>
+        </FormItem>
+
+        <FormItem Required Label="Публичность товара">
+            <Checkbox @bind-Value="@InventoryItem.IsPublic" />
+        </FormItem>
+
+        <FormItem Label="Изображение категории">
+            <InputFile id="fileInput" OnChange="UploadFile" hidden />
+            <Upload Name="file" FileList="fileList">
+                <label class="ant-btn" for="fileInput">
+                    <Icon Type="upload" />
+                    Прикрепить файл
+                </label>
+            </Upload>
+            <Spin Style="margin-top: 10px; margin-bottom: 10px;" Spinning=@_fileLoading></Spin>
+        </FormItem>
+
+        <CreateCharacteristics Type=@typeof(InventoryItemCreateRequest)
+                               Characteristics="@InventoryItem.Characteristics"></CreateCharacteristics>
+
+        <FormItem Required>
+            <Button Disabled="_createButtonDisabled" Type="@ButtonType.Primary" HtmlType="submit">
+                Создать
+            </Button>
+        </FormItem>
+    </Form>
+</Modal>
+
+@code {
+    [Parameter] public EventCallback OnInventoryItemCreated { get; set; }
+
+    List<UserProfileSummary> Users { get; set; } = new List<UserProfileSummary>();
+    List<TemplateView> Templates { get; set; } = new List<TemplateView>();
+    public TemplateView? SelectedTemplate { get; set; }
+    public bool _declineDisabled;
+    public bool _increaseDisabled;
+    public bool _visible;
+    public InventoryItemCreateRequest InventoryItem;
+    List<UploadFileItem> fileList = new List<UploadFileItem>();
+    public bool _fileLoading;
+    public FileForm Image { get; set; }
+    public bool _createButtonDisabled =>
+    string.IsNullOrWhiteSpace(InventoryItem.Model) ||
+    string.IsNullOrWhiteSpace(InventoryItem.SerialNumber);
+    public TemplateView? DefaultTemplate { get; set; } = new();
+
+    async Task ShowModal()
+    {
+        _visible = true;
+        InventoryItem = new InventoryItemCreateRequest();
+        await GetUsers();
+        await GetTemplates();
+        DefaultTemplate = Templates.FirstOrDefault(c => c.Title == "Другое");
+        ValidateDeclineState();
+        ValidateIncreaseState();
+    }
+
+    private void HandleCancel()
+    {
+        _visible = false;
+    }
+
+    private async Task UploadFile(InputFileChangeEventArgs e)
+    {
+        _fileLoading = true;
+        StateHasChanged();
+
+        var file = e.File;
+        using var memoryStream = new MemoryStream();
+        await file.OpenReadStream(e.File.Size).CopyToAsync(memoryStream);
+        var imageBytes = memoryStream.ToArray();
+
+        Image = new FileForm()
+            {
+                ContentType = file.ContentType,
+                FileName = file.Name,
+                FileBytes = imageBytes,
+            };
+
+        fileList = new List<UploadFileItem>()
+        {
+            new UploadFileItem()
+            {
+                FileName = file.Name,
+                Size = file.Size
+            }
+        };
+
+        _fileLoading = false;
+        InventoryItem.Image = Image;
+        StateHasChanged();
+    }
+
+    private async Task OnFinish(EditContext context)
+    {
+        var model = context.Model as InventoryItemCreateRequest;
+        var result = await _service.Create(model);
+        _logger.Log(model, result, "Создан товар.", Logging.Entities.ModuleAstrum.Inventory);
+        await OnInventoryItemCreated.InvokeAsync();
+        _visible = false;
+    }
+
+    async Task GetUsers()
+    {
+        Users = await _profileService.GetAllUsersProfilesSummariesAsync();
+    }
+
+    async Task GetTemplates()
+    {
+        Templates = await _templateService.GetTemplates();
+    }
+
+    async Task GetCharacteristicsSelectedTemplate(object template)
+    {
+        var selectedTemplate = template as TemplateView;
+        SelectedTemplate = await _templateService.GetTemplateById(selectedTemplate.Id);
+        if (SelectedTemplate != null)
+        {
+            var characteristics = _mapper.Map<List<CharacteristicCreateRequest>>(SelectedTemplate.Characteristics);
+            var inventoryItemsCharacteristics = InventoryItem.Characteristics.Where(characteristic => characteristic.IsCustomField == true).ToList();
+            InventoryItem.Characteristics = characteristics;
+            InventoryItem.Characteristics.AddRange(inventoryItemsCharacteristics);
+            if (SelectedTemplate.PictureId != null)
+            {
+                var file = await _fileStorage.GetFile(SelectedTemplate.PictureId.Value);
+                InventoryItem.Image = file;
+                fileList = new List<UploadFileItem>()
+            {
+                new UploadFileItem()
+                {
+                    FileName = file.FileName
+                }
+            };
+            }
+        }
+    }
+
+    void DeclineState()
+    {
+        InventoryItem.State += 5;
+        ValidateDeclineState();
+    }
+
+    void ValidateDeclineState()
+    {
+        if (InventoryItem.State == 100)
+        {
+            _declineDisabled = true;
+        }
+        else if (InventoryItem.State != 0)
+        {
+            _increaseDisabled = false;
+        }
+    }
+
+    void IncreaseState()
+    {
+        InventoryItem.State -= 5;
+        ValidateIncreaseState();
+    }
+
+    void ValidateIncreaseState()
+    {
+        if (InventoryItem.State == 0)
+        {
+            _increaseDisabled = true;
+        }
+        else if (InventoryItem.State != 100)
+        {
+            _declineDisabled = false;
+        }
+    }
+}

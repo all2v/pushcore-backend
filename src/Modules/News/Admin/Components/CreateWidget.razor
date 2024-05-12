@@ -1,0 +1,101 @@
+﻿@using Astrum.Storage.ViewModels;
+@inject IWidgetService _widgetService
+@inject ILogAdminService _logger
+
+<Button Style="margin-bottom: 20px;" Type="Primary" OnClick="ShowModal">Добавить картинку</Button>
+
+<Modal Visible="_visible" OnCancel="@HandleCancel" Footer="null">
+    <h3 class="text-center">Добавить картинку в виджет</h3>
+    <Form Model="Widget" OnFinish="OnFinish" ValidateMode="FormValidateMode.Rules">
+        <FormItem Label="Название" Style="margin-top: 30px;"
+            Rules=@(new FormValidationRule[]{ new FormValidationRule{ Required = true, Message = "Название обязательно!" } })>
+            <Input OnInput="@((ChangeEventArgs title) => OnChange(title))" Placeholder="Название" @bind-Value="@Widget.Title" />
+        </FormItem>
+        <FormItem Label="Сделать активной?">
+            <Checkbox @bind-Value="@Widget.IsActive" />
+        </FormItem>
+        <FormItem>
+            <InputFile id="fileInput" OnChange="UploadFile" hidden />
+            <Upload Name="files" FileList="fileList">
+                <label class="ant-btn" for="fileInput">
+                    <Icon Type="upload" />
+                    Прикрепить файл
+                </label>
+            </Upload>
+            <Spin Style="margin-top: 10px; margin-bottom: 10px;" Spinning=@_fileLoading></Spin>
+        </FormItem>
+        <FormItem>
+            <Button Type="@ButtonType.Primary" HtmlType="submit" Disabled="_createButtonDisabled">
+                Добавить
+            </Button>
+        </FormItem>
+    </Form>
+</Modal>
+
+@code {
+    public bool _visible;
+    public bool _fileLoading;
+    public bool _createButtonDisabled = true;
+    public WidgetForm Widget = new WidgetForm();
+    List<UploadFileItem> fileList = new List<UploadFileItem>();
+    [Parameter] public EventCallback<WidgetForm> OnWidgetCreated { get; set; }
+    public FileForm Image { get; set; }
+
+    public void ShowModal()
+    {
+        Widget = new();
+        fileList = new();
+        Image = new();
+        _visible = true;
+    }
+
+    public void HandleCancel()
+    {
+        _visible = false;
+    }
+
+    private async Task UploadFile(InputFileChangeEventArgs e)
+    {
+        _fileLoading = true;
+        StateHasChanged();
+
+        var file = e.File;
+        using var memoryStream = new MemoryStream();
+        await file.OpenReadStream(e.File.Size).CopyToAsync(memoryStream);
+        var imageBytes = memoryStream.ToArray();
+
+        Image = new FileForm()
+        {
+            ContentType = file.ContentType,
+            FileName = file.Name,
+            FileBytes = imageBytes,
+        };
+
+        fileList = new List<UploadFileItem>()
+        {
+            new UploadFileItem()
+            {
+                FileName = file.Name,
+                Size = file.Size
+            }
+        };
+
+        _fileLoading = false;
+        StateHasChanged();
+    }
+
+    public async void OnFinish(EditContext context)
+    {
+        var model = context.Model as WidgetForm;
+        var result = await _widgetService.CreateWidget(model, Image);
+        _logger.Log(model, result, "Создан виджет.", Logging.Entities.ModuleAstrum.News);
+        await OnWidgetCreated.InvokeAsync(result.Data);
+        _visible = false;
+        StateHasChanged();
+    }
+
+    private void OnChange(ChangeEventArgs title)
+    {
+        _createButtonDisabled = String.IsNullOrWhiteSpace(title.Value.ToString());
+    }
+}

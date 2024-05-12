@@ -1,0 +1,95 @@
+﻿@using Astrum.Logging.ViewModels.Filters
+@using Astrum.SharedLib.Common.Extensions
+@inject ILogHttpService service;
+
+
+<SearchingLogsData OnEditFiltering=OnInitializedAsync Filter="Filter"></SearchingLogsData>
+<Table @bind-PageIndex="pageIndex"
+       @bind-PageSize="pageSize"
+       DataSource="Logs"
+       Total="@(Logs?.TotalCount ?? 0)"
+       OnPageIndexChange="ChangeTableData"
+       OnPageSizeChange="ChangeTableData">
+    <RowTemplate Context="Log">
+        <Column TData="string" Title="Уровень запроса">
+            @if (Log.LogLevel == LogLevel.Information)
+            {
+                <Icon Fill="#0066fe" Type="@IconType.Fill.InfoCircle" Height="30" Width="30" Theme="@IconThemeType.Outline"></Icon>
+                <span>Инфо</span>
+            }
+            else if (Log.LogLevel == LogLevel.Warning)
+            {
+                <Icon Fill="#edb828" Type="@IconType.Fill.Warning" Height="30" Width="30" Theme="@IconThemeType.Outline"></Icon>
+                <span>Предупреждение</span>
+            }
+            else if (Log.LogLevel == LogLevel.Error)
+            {
+                <Icon Fill="#e6160c" Type="@IconType.Fill.ExclamationCircle" Height="30" Width="30" Theme="@IconThemeType.Outline"></Icon>
+                <span>Ошибка</span>
+            }
+        </Column>
+        <Column TData="ModuleAstrum" Title="Модуль">@Log.Module.GetDisplayName()</Column>
+        <Column TData="DateTimeOffset" Title="Время запроса">@Log.DateCreated.ToString("dd/MM/yyyy HH:mm")</Column>
+        <Column Align="ColumnAlign.Center" TData="string" Title="Статус запроса">
+            <div class="text-center">
+                <Text Class="rounded bg-secondary bg-gradient p-2 text-white text-center">@Log.StatusCode.Split(' ').First()</Text>
+            </div>
+        </Column>
+        <Column Align="ColumnAlign.Center" TData="string" Title="Метод запроса">
+            <div class="text-center">
+                @if (Log.TypeRequest.ToString() == "GET")
+                {
+                    <span class="rounded bg-primary bg-gradient p-2 text-white">
+                        @Log.TypeRequest.ToString()
+                    </span>
+                }
+                else if (Log.TypeRequest.ToString() == "POST")
+                {
+                    <span class="rounded bg-success bg-gradient p-2 text-white">
+                        @Log.TypeRequest.ToString()
+                    </span>
+
+                }
+                else if (Log.TypeRequest.ToString() == "PUT")
+                {
+                    <span class="rounded bg-warning bg-gradient p-2 text-white">
+                        @Log.TypeRequest.ToString()
+                    </span>
+
+                }
+                else if (Log.TypeRequest.ToString() == "DELETE")
+                {
+                    <span class="rounded bg-danger bg-gradient p-2 text-white">
+                        @Log.TypeRequest.ToString()
+                    </span>
+                }
+        </div>
+        </Column>
+        <Column TData="string" Title="Описание">@Log.Description</Column>
+        <Column TData="string" Title="Путь запроса" Style="word-break: break-all;" Width="200">@Log.Path</Column>
+        <Column Align="ColumnAlign.Center" TData="string" Title="Тело запроса" Width="200">
+            <LogsDataDetails Log="@Log">@Log.BodyRequest</LogsDataDetails>
+        </Column>
+        <Column Align="ColumnAlign.Center" TData="string" Title="Ответ запроса" Width="200">
+            <LogsDataDetails Log="@Log">@Log.RequestResponse</LogsDataDetails>
+        </Column>
+    </RowTemplate>
+</Table>
+@code {
+    [Parameter] public ModuleAstrum Module{ get; set; }
+    [Parameter] public LogFilter? Filter { get; set; }
+    private IPagedList<LogHttpView> Logs { get; set; }
+    private int pageIndex = 1;
+    private int pageSize = 10;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ChangeTableData();
+    }
+
+    private async Task ChangeTableData()
+    {
+        Logs = await service.GetLogs(Filter, pageIndex, pageSize);
+    }
+}

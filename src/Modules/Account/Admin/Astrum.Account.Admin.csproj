@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+
+  <ItemGroup>
+    <SupportedPlatform Include="browser" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AntDesign" Version="0.13.2" />
+    <PackageReference Include="MediatR" Version="11.1.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="7.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\IdentityServer\DomainServices\Astrum.IdentityServer.DomainServices.csproj" />
+    <ProjectReference Include="..\..\IdentityServer\Infrastructure\Astrum.IdentityServer.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\Identity\Application\Astrum.Identity.Application.csproj" />
+    <ProjectReference Include="..\Application\Astrum.Account.Application.csproj" />
+  </ItemGroup>
+
+</Project>

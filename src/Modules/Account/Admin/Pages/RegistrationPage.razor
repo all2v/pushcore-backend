@@ -1,0 +1,43 @@
+﻿@page "/admin/registration"
+@using Astrum.Account.Enums;
+@using Astrum.Account.Features.Registration
+@using Astrum.Account.Admin.Components
+@inject IRegistrationApplicationService _applicationService
+
+<PageTitle>Заявки на регистрацию</PageTitle>
+
+<h3>Заявки на регистрацию</h3>
+<Tabs>
+    <TabPane Tab="Все" Key="1">
+        <ApplicationsTable ApplicationUpdated="@UpdateApplications" Applications="@Applications"></ApplicationsTable>
+    </TabPane>
+    <TabPane Tab="Входящие" Key="2">
+        <ApplicationsTable ApplicationUpdated="@UpdateApplications" Applications="@Received"></ApplicationsTable>
+    </TabPane>
+    <TabPane Tab="Одобренные" Key="3">
+        <ApplicationsTable Applications="@Accepted"></ApplicationsTable>
+    </TabPane>
+    <TabPane Tab="Отклоненные" Key="4">
+        <ApplicationsTable Applications="@Rejected"></ApplicationsTable>
+    </TabPane>
+</Tabs>
+
+@code {
+    List<RegistrationApplicationResponse> Applications = new();
+    IEnumerable<RegistrationApplicationResponse> Received;
+    IEnumerable<RegistrationApplicationResponse> Accepted;
+    IEnumerable<RegistrationApplicationResponse> Rejected;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await UpdateApplications();
+    }
+
+    async Task UpdateApplications()
+    {
+        Applications = await _applicationService.GetAllAsync();
+        Received = Applications.Where(application => application.Status == ApplicationStatus.Received);
+        Accepted = Applications.Where(application => application.Status == ApplicationStatus.Accepted);
+        Rejected = Applications.Where(application => application.Status == ApplicationStatus.Rejected);
+    }
+}

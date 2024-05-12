@@ -1,0 +1,149 @@
+﻿@*@page "/admin/signin"*@
+@layout EmptyLayout
+
+@attribute [AllowAnonymous]
+@using Astrum.Identity.Managers;
+@using Microsoft.AspNetCore.DataProtection;
+@using Microsoft.AspNetCore.Identity;
+@using System.ComponentModel.DataAnnotations;
+
+@inject IDataProtectionProvider dataProtectionProvider
+@inject NavigationManager navigationManager
+@inject ApplicationUserManager _userManager;
+@inject IJSRuntime js
+
+@{
+    <YTitle>Login</YTitle>
+}
+<div class="d-flex flex-column flex-root">
+    <!--begin::Login-->
+    <div class="login login-3 wizard d-flex flex-column flex-lg-row flex-column-fluid">
+        <!--begin::Aside-->
+        <!--begin::Aside-->
+        <!--begin::Content-->
+        <div class="login-content flex-row-fluid d-flex flex-column p-10">
+            <!--begin::Wrapper-->
+            <div class="d-flex flex-row-fluid flex-center">
+                <div class="login-form">
+                    <EditForm EditContext="@editContext" OnValidSubmit="@OnFinish" class="form fv-plugins-bootstrap fv-plugins-framework" id="kt_login_singin_form">
+                        
+                        <div class="pb-5 pb-lg-15">
+                            <h3 class="font-weight-bolder text-dark font-size-h2 font-size-h1-lg">Sign In</h3>
+                            @*<div class="text-muted font-weight-bold font-size-h4">
+                                New Here?
+                                <a href="/account/signup" class="text-primary font-weight-bolder">Create Account</a>
+                            </div>*@
+                           
+                        </div>
+                        <div class="form-group fv-plugins-icon-container">
+                            @if (showSignInError)
+                            {
+                            <div class="notification is-danger" style="color: red;">
+                                Sorry, wrong username or password
+                            </div>
+                            }
+
+                            <label class="font-size-h6 font-weight-bolder text-dark">Your Username</label>
+                            <InputText class="form-control h-auto py-7 px-6 rounded-lg border-0" Type="text" name="username" Autocomplete="off" @bind-Value="signInModel.Username" />
+                            <div class="fv-plugins-message-container"></div>
+                        </div>
+                        <div class="form-group fv-plugins-icon-container">
+                            <div class="d-flex justify-content-between mt-n5">
+                                <label class="font-size-h6 font-weight-bolder text-dark pt-5">Your Password</label>
+                                @*<a href="" class="text-primary font-size-h6 font-weight-bolder text-hover-primary pt-5">Forgot Password ?</a>*@
+                            </div>
+                            <InputText class="form-control h-auto py-7 px-6 rounded-lg border-0" type="password" name="password" autocomplete="off" @bind-Value="signInModel.Password" />
+                            <div class="fv-plugins-message-container"></div>
+                            <DataAnnotationsValidator />
+                            <ValidationSummary />
+                        </div>
+                        <div class="pb-lg-0 pb-5">
+                            <button type="submit" disabled="@buttonIsDisabled" id="kt_login_singin_form_submit_button" class="btn btn-primary font-weight-bolder font-size-h6 px-8 py-4 my-3 mr-3">Sign In</button>
+                            @*<a href="/api/auth/gitlabauthenticate?returnUrl=@ReturnUrl" asp-route-returnUrl="/" class="btn btn-light-primary font-weight-bolder px-8 py-4 my-3 font-size-lg">
+                                <span class="svg-icon svg-icon-md">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 32 32" fill="none">
+                                        <title>file_type_gitlab</title>
+                                        <polygon points="16 28.896 16 28.896 21.156 13.029 10.844 13.029 16 28.896" style="fill:#e24329" />
+                                        <polygon points="16 28.896 10.844 13.029 3.619 13.029 16 28.896" style="fill:#fc6d26" />
+                                        <path d="M3.619,13.029h0L2.052,17.851a1.067,1.067,0,0,0,.388,1.193L16,28.9,3.619,13.029Z" style="fill:#fca326" />
+                                        <path d="M3.619,13.029h7.225L7.739,3.473a.534.534,0,0,0-1.015,0L3.619,13.029Z" style="fill:#e24329" />
+                                        <polygon points="16 28.896 21.156 13.029 28.381 13.029 16 28.896" style="fill:#fc6d26" />
+                                        <path d="M28.381,13.029h0l1.567,4.822a1.067,1.067,0,0,1-.388,1.193L16,28.9,28.381,13.029Z" style="fill:#fca326" />
+                                        <path d="M28.381,13.029H21.156l3.105-9.557a.534.534,0,0,1,1.015,0l3.105,9.557Z" style="fill:#e24329" />
+                                    </svg>
+                                </span>Sign in with GitLab
+                              </a>*@
+                        </div>
+                        <input type="hidden"><div></div>
+                    </EditForm>
+                </div>
+            </div>
+            <!--end::Wrapper-->
+        </div>
+        <!--end::Content-->
+    </div>
+    <!--end::Login-->
+</div>
+
+@code
+{
+    public class SignInModel
+    {
+        [Required]
+        public string Username { get; set; }
+        [Required]
+        public string Password { get; set; }
+        public bool RememberMe { get; set; } = true;
+    }
+
+    private SignInModel signInModel = new SignInModel();
+    private bool showSignInError = false;
+    private EditContext editContext;
+    private ValidationMessageStore messageStore;
+    private bool buttonIsDisabled = false;
+    private string ReturnUrl;
+
+    private async void OnFinish()
+    {
+        buttonIsDisabled = true;
+        showSignInError = false;
+        messageStore.Clear();
+        var user = await _userManager.FindByNameAsync(signInModel.Username);
+        if (user != null && await _userManager.CheckPasswordAsync(user, signInModel.Password))
+        {
+            if (!user.IsActive)
+            {
+                //TODO: display error
+                //await js.DisplayMessage("error", "Невозможно войти. Аккаунт неактивен");
+            }
+            else
+            {
+                var token = await _userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultProvider, "SignIn");
+                var data = $"{user.Id}|{token}";
+                if (!string.IsNullOrWhiteSpace(ReturnUrl))
+                {
+                    data += $"|{ReturnUrl}";
+                }
+                var protector = dataProtectionProvider.CreateProtector("SignIn");
+                var pdata = protector.Protect(data);
+
+                navigationManager.NavigateTo("/api/auth/admin-basic-login?protectedData=" + pdata, forceLoad: true);
+            }
+        }
+        else
+        {
+            showSignInError = true;
+            StateHasChanged();
+        }
+        buttonIsDisabled = false;
+        StateHasChanged();
+    }
+
+    protected override void OnInitialized()
+    {
+        editContext = new(signInModel);
+        messageStore = new(editContext); 
+        var parsedQuery = System.Web.HttpUtility.ParseQueryString(new Uri(navigationManager.Uri).Query);
+        ReturnUrl = parsedQuery["returnUrl"];
+    }
+}

@@ -1,0 +1,48 @@
+﻿.logo-wrapper {
+    padding: 20px 30px;
+}
+
+.logo-image {
+    height: 35px;
+}
+
+.nav-item {
+    padding-bottom: 0.5rem;
+    letter-spacing: 1px;
+}
+
+.nav-item:first-of-type {
+    padding-top: 1rem;
+}
+
+.nav-item:last-of-type {
+    padding-bottom: 1rem;
+}
+
+.nav-item ::deep a {
+    color: #2c323f;
+    height: 3rem;
+    display: flex;
+    align-items: center;
+    line-height: 3rem;
+    border-radius: 10px;
+    justify-content: space-between;
+}
+
+.nav-item ::deep a.active {
+    background-color: #f4f6fd;
+    color: #6362e7;
+}
+
+.nav-item ::deep a:hover {
+    background-color: #f4f6fd;
+    color: #6362e7;
+}
+
+.oi {
+    font-size: 0.85rem;
+    font-weight: 600;
+    vertical-align: text-top;
+    font-family: Rubik,sans-serif;
+    top: -2px;
+}

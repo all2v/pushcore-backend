@@ -1,0 +1,55 @@
+﻿@using Sakura.AspNetCore
+@using Astrum.Market.Application.ViewModels
+@using Astrum.Account.Application.Services
+@using Astrum.SharedLib.Common.Extensions
+@inject ITransactionService _transactionService
+
+<Table DataSource="transactions" 
+       Loading="loading" 
+       @bind-PageIndex="page" 
+       @bind-PageSize="pageSize"
+       OnPageIndexChange="ChangeData"
+       OnPageSizeChange="ChangeData"
+       Total="@(transactions?.TotalCount ?? 0)">
+    <RowTemplate Context="tranc">
+        <Column TData="string" Title="Пользователь">
+            @tranc.User.NameWithSurname
+        </Column>
+        <Column TData="string" Title="Сумма">
+            @tranc.Sum
+        </Column>
+        <Column TData="string" Title="Тип транзакции">
+            @tranc.Type.GetDisplayName()
+        </Column>
+        <Column TData="double" Title="Описание">
+            @tranc.Description
+        </Column>
+        <Column TData="string" Title="Дата создания">
+            @tranc.DateCreated
+        </Column>
+        <Column TData="double" Title="Создатель транзакции">
+            @(tranc.Owner?.NameWithSurname ?? "-")
+        </Column>
+    </RowTemplate>
+</Table>
+
+@code {
+    private IPagedList<TransactionResponse> transactions;
+
+    private int page = 1;
+    private int pageSize = 10;
+    private bool loading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ChangeData();
+    }
+
+    private async Task ChangeData()
+    {
+        loading = true;
+        transactions = (await _transactionService.GetTransactions(page, pageSize)).Data;
+        loading = false;
+    }
+
+}

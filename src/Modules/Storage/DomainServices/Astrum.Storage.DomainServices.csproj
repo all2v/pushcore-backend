@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+	<TargetFramework>net7.0</TargetFramework>
+	<TargetFrameworkVersion>7.0</TargetFrameworkVersion>
+	<ImplicitUsings>enable</ImplicitUsings>
+	<Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\SharedLib\Application\Astrum.SharedLib.Application.csproj" />
+    <ProjectReference Include="..\Domain\Astrum.Storage.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

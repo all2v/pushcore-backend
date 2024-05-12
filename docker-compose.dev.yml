@@ -1,0 +1,159 @@
+version: '3.8'
+services:
+
+  application-db:
+    image: postgres:14.1-alpine
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - '55433:5432'
+    volumes:
+      - application-db_data:/var/lib/postgresql/data
+    networks:
+    - app-dev
+
+  file-storage-s3:
+    image: minio/minio:latest
+    container_name: minio
+    restart: always
+    environment:
+     - MINIO_ACCESS_KEY=1e91d4b6fd7d9d29bc76f109
+     - MINIO_SECRET_KEY=dae6c868cc98c3aedf7932872fb823721cf0ba14e685f4531a4621f34e8d2c18
+    ports:
+     - '9000:9000'
+     - '9001:9001'
+    volumes:
+      - /mnt/minio/data:/data
+      - /mnt/minio/config:/root/.minio
+    command: server --address ":9000" --console-address ":9001" /data
+    networks:
+    - app-dev  
+  
+  event-store-db:
+    image: postgres:14.1-alpine
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - '55434:5432'
+    volumes:
+      - event-store-db_data:/var/lib/postgresql/data
+    networks:
+    - app-dev
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: 'rabbitmq'
+    ports:
+      - 5672:5672
+      - 15672:15672
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq/
+      - rabbitmq_log:/var/log/rabbitmq
+    networks:
+      - rabbitmq_go_net
+
+  keycloak-db:
+    image: postgres:14.1-alpine
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=keycloak-postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - '45437:5432'
+    volumes:
+      - keycloak-db_data:/var/lib/postgresql/data
+    networks:
+    - app-dev
+
+  keycloak:
+    image: jboss/keycloak:16.1.1
+    container_name: 'keycloak'
+    restart: unless-stopped
+    depends_on:
+      - keycloak-db
+    environment:
+      DB_VENDOR: postgres
+      DB_ADDR: keycloak-db
+      DB_DATABASE: keycloak-postgres
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      KEYCLOAK_USER: keycloak_admin
+      KEYCLOAK_PASSWORD: keycloak_password
+    ports:
+      - "28080:8080"
+    networks:
+    - app-dev
+  
+  api:
+    #image builded by gitlab ci
+    image: boolbl4/pushcore-backend:latest
+    container_name: 'api'
+    restart: unless-stopped
+    ports:
+      - 50010:443
+      - 50000:80
+    environment:
+      - ASPNETCORE_ENVIRONMENT=DockerCompose
+      - ASPNETCORE_URLS=https://+:443;http://+:80
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=password
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx
+      - ASPNETCORE_HTTPS_PORT=50010
+    volumes:
+      - /root/.aspnet/https:/https:ro
+    networks:
+    - app-dev
+
+  frontend:
+    image: lighthouse9/pushcore-frontend:latest
+    container_name: 'frontend'
+    restart: unless-stopped
+    volumes:
+      - './:/app'
+      - '/app/node_modules'
+    ports:
+      - 3000:3000
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    command: npm start
+
+  nginx:
+    image: boolbl4/nginx-with-user
+    container_name: 'nginx'
+    restart: unless-stopped
+    ports:
+      - 80:80    
+      - 443:443    
+    volumes:
+      - /etc:/etc
+      - /usr/share/nginx/html://usr/share/nginx/html:ro
+      # - /etc/nginx/nginx.conf://etc/nginx/nginx.conf:ro
+      # - /etc/nginx/modules-enabled:/etc/nginx/modules-enabled
+    networks:
+    - app-dev
+
+networks:
+  rabbitmq_go_net:
+    driver: bridge
+  app-dev:
+    driver: bridge
+
+volumes:
+  #  identity-db_data:
+  #    driver: local
+  # localstack-data:
+  #   driver: local
+  application-db_data:
+    driver: local
+  event-store-db_data:
+    driver: local
+  rabbitmq_data:
+    driver: local
+  rabbitmq_log:
+    driver: local
+  keycloak-db_data:
+    driver: local

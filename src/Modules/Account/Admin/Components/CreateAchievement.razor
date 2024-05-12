@@ -1,0 +1,139 @@
+﻿@using Astrum.Account.Features.Achievement.Commands.AchievementCreate
+@using Astrum.Storage.ViewModels
+@inject IMediator _mediator
+@inject ILogAdminService _logger
+
+<Modal 
+    Visible="_visible"
+    OnCancel="HandleCancel"
+    Footer="null">
+    <h3 class="text-center" style="margin-bottom: 20px;">Создание достижения</h3>
+    <Form
+        Model="command" 
+        OnFinish="OnFinish"
+        LabelColSpan="6">
+        <FormItem Required Label="Название">
+            <Input BindOnInput @bind-Value="command.Name" />
+        </FormItem>
+        <FormItem Required Label="Описание">
+            <TextArea BindOnInput @bind-Value="command.Description" />
+        </FormItem>
+        <FormItem Required Label="Изображение">
+            <Row Class="mt-2">
+                <InputFile id="fileInput" OnChange="LoadFile" hidden multiple accept=".jpeg, .png, .svg, .jpg"/>
+                <label class="ant-btn" for="fileInput">
+                    <Icon Type="upload" />
+                    Прикрепить файл
+                </label>
+                <Spin Style="margin-top: 10px; margin-bottom: 10px;" Spinning=@_fileLoading></Spin>
+            </Row>
+        
+            <Row Class="mt-2">
+                @if (!string.IsNullOrWhiteSpace(base64))
+                {
+                    <img src="@base64" alt="avatar" style="width: 25%" />
+                }
+            </Row>
+        </FormItem>
+        <FormItem>
+            <Button Type="@ButtonType.Primary" HtmlType="submit" Disabled="_createButtonDisabled">
+                Создать
+            </Button>
+        </FormItem>
+        @if (ValidationError)
+        {
+            <p style="color: #ff4d4f">@ValidationMessage</p>
+        }
+    </Form>
+</Modal>
+
+@code {
+    public bool _visible;
+    public bool _fileLoading;
+    List<UploadFileItem> fileList = new List<UploadFileItem>();
+    public FileForm Image { get; set; }
+    public AchievementCreateCommand command = new();
+    [Parameter] public EventCallback OnAchievementCreated { get; set; }
+    public const string ValidationMessage = "Заполните обязательные поля!";
+    public bool ValidationError;
+    public bool _createButtonDisabled =>
+    string.IsNullOrWhiteSpace(command.Name) ||
+    string.IsNullOrWhiteSpace(command.Description) || command.Icon == null;
+
+    private string base64;
+
+    public void HandleCancel()
+    {
+        _visible = false;
+    }
+
+    public void ShowModal()
+    {
+        _visible = true;
+        Image = new();
+        command = new();
+        fileList = new();
+        ValidationError = false;
+        StateHasChanged();
+    }
+
+    bool BeforeUpload(UploadFileItem file)
+    {
+        var isJpgOrPng = file.Type == "image/jpeg" || file.Type == "image/png";
+        var isLt2M = file.Size / 1024 / 1024 < 2;
+        return isJpgOrPng && isLt2M;
+    }
+
+    private async Task LoadFile(InputFileChangeEventArgs e)
+    {
+        _fileLoading = true;
+        StateHasChanged();
+
+        var file = e.File;
+        using var memoryStream = new MemoryStream();
+        await file.OpenReadStream(e.File.Size).CopyToAsync(memoryStream);
+        var imageBytes = memoryStream.ToArray();
+        Image = new FileForm()
+            {
+                ContentType = file.ContentType,
+                FileName = file.Name,
+                FileBytes = imageBytes,
+            };
+        base64 = $"data:image/jpeg;charset=utf-8;base64, {Convert.ToBase64String(imageBytes)}";
+
+        command.Icon = Image;
+
+        fileList = new List<UploadFileItem>()
+        {
+            new UploadFileItem()
+            {
+                FileName = file.Name,
+                Size = file.Size
+            }
+        };
+
+        _fileLoading = false;
+        StateHasChanged();
+    }
+
+    public async Task OnFinish()
+    {
+        if (Validate(command))
+        {
+            var result = await _mediator.Send(command);
+            _logger.Log(command, result, "Создано достижение.", Logging.Entities.ModuleAstrum.Account);
+            await OnAchievementCreated.InvokeAsync();
+            _visible = false;
+        }
+    }
+
+    public bool Validate(AchievementCreateCommand command)
+    {
+        if (String.IsNullOrWhiteSpace(command.Name) || String.IsNullOrWhiteSpace(command.Description) || command.Icon == null)
+        {
+            ValidationError = true;
+            return false;
+        }
+        return true;
+    }
+}

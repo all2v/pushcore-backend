@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net7.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\..\SharedLib\Domain\Astrum.SharedLib.Domain.csproj" />
+    </ItemGroup>
+
+
+
+
+
+    <ItemGroup>
+      <PackageReference Include="YouTrackSharp" Version="2022.3.0" />
+    </ItemGroup>
+
+
+
+
+
+
+
+
+
+
+
+
+</Project>

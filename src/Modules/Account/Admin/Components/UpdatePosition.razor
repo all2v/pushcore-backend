@@ -1,0 +1,77 @@
+﻿@inject IPositionsService _positionService
+@inject ILogAdminService _logger
+
+<Button Type="Primary" OnClick="ShowModal">Редактировать</Button>
+
+<Modal AfterClose="async () => { if (OnPositionEdited.HasDelegate)
+    {
+        await OnPositionEdited.InvokeAsync();
+    }}"
+       Visible="_visible"
+       OnCancel="@HandleCancel"
+       Footer="null">
+    <h3 class="text-center">Редактирование должности</h3>
+    <Form Model="Position" OnFinish="OnFinish">
+        <FormItem Style="margin: 20px 0;">
+            <Input OnInput="@((ChangeEventArgs name) => OnChange(name))" Placeholder="Название должности" @bind-Value="Position.Name" TValue="string" />
+        </FormItem>
+        <FormItem>
+            <Button Type="@ButtonType.Primary" HtmlType="submit" Disabled="_updateButtonDisabled">
+                Редактировать
+            </Button>
+        </FormItem>
+        @if (_positionAlreadyExists)
+        {
+            <p style="color: #ff4d4f">Такая должность уже существует!</p>
+        }
+    </Form>
+</Modal>
+
+@code {
+    [Parameter] public PositionForm Position { get; set; }
+    [Parameter] public EventCallback OnPositionEdited { get; set; }
+    private bool _positionAlreadyExists = false;
+    private bool _visible;
+    public bool _updateButtonDisabled = false;
+    private string _formerName; // прежнее название
+
+    public void ShowModal()
+    {
+        _formerName = Position.Name;
+        _positionAlreadyExists = false;
+        _visible = true;
+    }
+
+    public void HandleCancel()
+    {
+        Position.Name = _formerName;
+        _visible = false;
+    }
+
+    public async Task OnFinish(EditContext context)
+    {
+        var model = context.Model as PositionForm;
+        if (!String.IsNullOrWhiteSpace(model?.Name))
+        {
+            if (model.Name.ToLower().Trim() == _formerName.ToLower().Trim())
+            {
+                _visible = false;
+                return;
+            }
+            if (await _positionService.PositionAlreadyExists(model.Name))
+            {
+                _positionAlreadyExists = true;
+                return;
+            }
+            var result = await _positionService.UpdatePosition(model.Id, model);
+            _logger.Log(model, result, "Обновлена должность.", Logging.Entities.ModuleAstrum.Account);
+            _visible = false;
+            //await OnCategoryEdited.InvokeAsync();
+        }
+    }
+
+    private void OnChange(ChangeEventArgs name)
+    {
+        _updateButtonDisabled = String.IsNullOrWhiteSpace(name.Value.ToString());
+    }
+}

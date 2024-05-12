@@ -1,0 +1,79 @@
+﻿@inject ITemplatesService _service
+
+<Button Type="Primary" OnClick="ShowModal">Подробнее</Button>
+
+<Modal Width="1000" Visible="_visible" OnCancel="@HandleCancel" Footer="null">
+    <h3 class="text-center">Подробности о товаре @InventoryItem.Model</h3>
+    <div style="height: 300px; width: 330px;">
+        <img class="rounded float-left" style="width:100%; height:100%; border-radius:10px; object-fit: cover;" src="@InventoryItem.LinkImage" />
+    </div>
+    <dl class="row fs-5">
+        <dt style="margin-top: 20px;" class="fw-bolder col-sm-3">Модель</dt>
+        <dd style="margin-top: 20px;" class="col-sm-9">@InventoryItem.Model</dd>
+
+        <dt style="margin-top: 20px;" class="fw-bolder col-sm-3">Собственник</dt>
+        <dd style="margin-top: 20px;" class="col-sm-9">@(InventoryItem.User != null ? InventoryItem.User.NameWithSurname : "Отсутствует")</dd>
+
+        <dt style="margin-top: 20px;" class="fw-bolder col-sm-3">Категория</dt>
+        <dd style="margin-top: 20px;" class="col-sm-9">@(InventoryItem.TemplateId != null ? InventoryItem.Template.Title : "Отсутствует")</dd>
+
+        <dt style="margin-top: 20px;" class="fw-bolder col-sm-3">Серийный номер</dt>
+        <dd style="margin-top: 20px;" class="col-sm-9">@InventoryItem.SerialNumber</dd>
+
+        <dt style="margin-top: 20px;" class="fw-bolder col-sm-3">Статус</dt>
+        <dd style="margin-top: 20px;" class="col-sm-9">@ConvertStatusToString(InventoryItem)</dd>
+
+        <dt style="margin-top: 20px;" class="fw-bolder col-sm-3">Публичность</dt>
+        <dd style="margin-top: 20px;" class="col-sm-9">@InventoryItem.IsPublic</dd>
+
+        <dt style="margin-top: 20px;" class="fw-bolder col-sm-3">Состояние</dt>
+        <dd style="margin-top: 20px;" class="col-sm-9">
+            <Progress Size="ProgressSize.Small" Percent="@InventoryItem.State"></Progress>
+        </dd>
+
+        <dt style="margin-top: 20px;" class="fw-bolder col-sm-3">Характеристики</dt>
+        <dd style="margin-top: 20px;" class="col-sm-9">
+            @if (InventoryItem.Characteristics.Count != 0)
+                foreach (var characteristic in InventoryItem.Characteristics)
+                {
+                    <p>@characteristic.Name - @(characteristic.Value != null ? characteristic.Value : "значения нет")</p>
+                }
+            else
+            {
+                <p>Отсутствуют</p>
+            }
+        </dd>
+    </dl>
+</Modal>
+
+@code {
+    [Parameter] public InventoryItemView InventoryItem { get; set; }
+
+    public bool _visible;
+
+    private void ShowModal()
+    {
+        _visible = true;
+    }
+
+    private void HandleCancel()
+    {
+        _visible = false;
+    }
+
+    private async Task OnFinish()
+    {
+        _visible = false;
+    }
+
+    private string ConvertStatusToString(InventoryItemView inventoryItemView)
+    {
+        var strRole = inventoryItemView.Status switch
+        {
+            Status.Miss => "Отсутствует",
+            Status.InUsing => "В использовании",
+            Status.InWarehouse => "На складе",
+        };
+        return strRole;
+    }
+}

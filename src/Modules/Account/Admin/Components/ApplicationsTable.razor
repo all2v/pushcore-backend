@@ -1,0 +1,93 @@
+﻿@using Astrum.Account.Enums
+@using Astrum.Account.Features.Registration
+@using Astrum.Account.Services
+
+@inject ILogAdminService _logger
+@inject IRegistrationApplicationService _applicationService
+
+<Table TableLayout="fixed" DataSource="Applications">
+    <RowTemplate Context="application">
+        <Column TData="string" Title="Фамилия" DataIndex="@nameof(application.Surname)" Sortable>
+            @application.Surname
+        </Column>
+        <Column TData="string" Title="Имя" DataIndex="@nameof(application.Name)" Sortable>
+            @application.Name
+        </Column>
+        <Column TData="string" Title="Отчество" DataIndex="@nameof(application.Patronymic)" Sortable>
+            @application.Patronymic
+        </Column>
+        <Column TData="string" Title="Юзернейм" DataIndex="@nameof(application.Username)" Sortable>
+            @application.Username
+        </Column>
+        <Column TData="string" Title="Номер телефона" DataIndex="@nameof(application.PhoneNumber)" Sortable>
+            @application.PhoneNumber
+        </Column>
+        <Column TData="string" Title="Почта" DataIndex="@nameof(application.Email)" Sortable>
+            @application.Email
+        </Column>
+        <Column TData="DateTimeOffset" Title="Дата заявки" DataIndex="@nameof(application.DateCreated)" Sortable DefaultSortOrder="@SortDirection.Descending">
+            @application.DateCreated.ToString("dd/MM/yyyy HH:mm")
+        </Column>
+        @if (Applications.Any(application => application.Status == ApplicationStatus.Received))
+        {
+            <ActionColumn Width="150" Title="Действия">
+                @if (application.Status == ApplicationStatus.Received)
+                {
+                    <Popover Placement="@Placement.Top" Title="Одобрить заявку">
+                        <Popconfirm Placement="@Placement.Top" Title="Вы уверены?" OnConfirm="@(async () => await ApproveApplication(application))" OkText="Да" CancelText="Нет">
+                            <Icon class="action-icon action-check" Type="check" Theme="outline"/>
+                        </Popconfirm>
+                    </Popover>
+
+                    <Popover Placement="@Placement.Top" Title="Редактировать заявку">
+                        <EditApplication ApplicationUpdated="@ApplicationUpdated" Application="@application" />
+                    </Popover>
+
+                    <Popover Placement="@Placement.Top" Title="Отклонить заявку">
+                        <Popconfirm Placement="@Placement.Top" Title="Вы уверены?" OnConfirm="@(async () => await DeclineApplication(application))" OkText="Да" CancelText="Нет">
+                            <Icon class="action-icon action-stop" Type="stop" Theme="outline" />
+                        </Popconfirm>
+                    </Popover>
+                }
+            </ActionColumn>
+        }
+    </RowTemplate>
+</Table>
+
+<style>
+    .action-icon {
+        font-size: 20px;
+        cursor: pointer;
+    }
+
+    .action-check {
+        color: lightgreen;
+    }
+
+    .action-edit {
+        color: #1890ff;
+    }
+
+    .action-stop {
+        color: palevioletred;
+    }
+</style>
+
+@code {
+    [Parameter] public IEnumerable<RegistrationApplicationResponse> Applications { get; set; }
+    [Parameter] public EventCallback ApplicationUpdated { get; set; }
+
+    async Task ApproveApplication(RegistrationApplicationResponse application)
+    {
+        var result = await _applicationService.ApproveRegistrationApplicationAsync(application.Id);
+        _logger.Log(application, result, "Регистрация пользователя одобрена.", Logging.Entities.ModuleAstrum.Account);
+        await ApplicationUpdated.InvokeAsync();
+    }
+
+    async Task DeclineApplication(RegistrationApplicationResponse application)
+    {
+        var result = await _applicationService.DeclineRegistrationApplicationAsync(application.Id);
+        _logger.Log(application, result, "Регистрация пользователя не одобрена.", Logging.Entities.ModuleAstrum.Account);
+        await ApplicationUpdated.InvokeAsync();
+    }
+}

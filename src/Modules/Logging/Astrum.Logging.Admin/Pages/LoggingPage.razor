@@ -1,0 +1,57 @@
+﻿@page "/admin/logs"
+@using Astrum.Logging.ViewModels.Filters
+@using Astrum.SharedLib.Common.Extensions
+
+<PageTitle>Логи</PageTitle>
+
+<Tabs>
+    <TabPane Tab="Логи" Key="1">
+        <h3>Логи запросов</h3>
+        <LogsData Filter="Filter"></LogsData>
+        @*<Tabs @bind-ActiveKey="@activeKey">
+            <TabPane Tab="@ModuleAstrum.Market.GetDisplayName()" Key="1">
+                <LogsData Filter="Filter" Module=ModuleAstrum.Market></LogsData>
+            </TabPane>
+            <TabPane Tab="@ModuleAstrum.Inventory.GetDisplayName()" Key="2">
+                <LogsData Filter="Filter" Module=ModuleAstrum.Inventory></LogsData>
+            </TabPane>
+            <TabPane Tab="@ModuleAstrum.News.GetDisplayName()" Key="3">
+                <LogsData Filter="Filter" Module=ModuleAstrum.News></LogsData>
+            </TabPane>
+            <TabPane Tab="@ModuleAstrum.Articles.GetDisplayName()" Key="4">
+                <LogsData Filter="Filter" Module=ModuleAstrum.Articles></LogsData>
+            </TabPane>
+            <TabPane Tab="@ModuleAstrum.Appeal.GetDisplayName()" Key="5">
+                <LogsData Filter="Filter" Module=ModuleAstrum.Appeal></LogsData>
+            </TabPane>
+            <TabPane Tab="@ModuleAstrum.Project.GetDisplayName()" Key="6">
+                <LogsData Filter="Filter" Module=ModuleAstrum.Project></LogsData>
+            </TabPane>
+            <TabPane Tab="@ModuleAstrum.Calendar.GetDisplayName()" Key="7">
+                <LogsData Filter="Filter" Module=ModuleAstrum.Calendar></LogsData>
+            </TabPane>
+            <TabPane Tab="@ModuleAstrum.Account.GetDisplayName()" Key="8">
+                <LogsData Filter="Filter" Module=ModuleAstrum.Account></LogsData>
+            </TabPane>
+            <TabPane Tab="@ModuleAstrum.Identity.GetDisplayName()" Key="9">
+                <LogsData Filter="Filter" Module=ModuleAstrum.Identity></LogsData>
+            </TabPane>
+            <TabPane Tab="@ModuleAstrum.TrackerProject.GetDisplayName()" Key="10">
+                <LogsData Filter="Filter" Module=ModuleAstrum.TrackerProject></LogsData>
+            </TabPane>
+        </Tabs>*@
+    </TabPane>
+
+    <TabPane Tab="Логи админки" Key="2">
+        <h3>Логи админки</h3>
+        <LogsDataAdmin FilterAdmin="FilterAdmin"></LogsDataAdmin>
+    </TabPane>
+</Tabs>
+
+@code {
+    private string activeKey { get; 
+        set; } = "1";
+    private string activeKeyAdmin { get; set; } = "1";
+    private LogFilter Filter { get; set; } = new LogFilter();
+    private LogFilterAdmin FilterAdmin { get; set; } = new LogFilterAdmin();
+}

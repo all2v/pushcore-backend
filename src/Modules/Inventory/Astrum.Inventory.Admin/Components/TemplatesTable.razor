@@ -1,0 +1,51 @@
+﻿@inject ITemplatesService _service;
+@inject ILogAdminService _logger;
+@using Astrum.SharedLib.Persistence.Helpers;
+
+<Table DataSource="Templates" TableLayout="fixed">
+    <RowTemplate Context="Template">
+        <Column TData="string" Title="Название" DataIndex="@nameof(Template.Title)">
+            @Template.Title
+        </Column>
+        <Column TData="string" Title="Характеристики">
+
+            @if (Template.Characteristics.Count != 0)
+                foreach (var characteristic in Template.Characteristics)
+                {
+                    <p>@characteristic.Name</p>
+                }
+            else
+            {
+                <p>Отсутствуют</p>
+            }
+        </Column>
+        <Column TData="AntDesign.Template" Title="Изображение">
+            <img src="@Template.LinkImage" width="100" />
+        </Column>
+        <ActionColumn>
+            <Space>
+                <SpaceItem>
+                    <UpdateTemplate Template="@Template" OnTemplateEdited="OnTemplateChange"></UpdateTemplate>
+                </SpaceItem>
+                <SpaceItem>
+                    <Popconfirm Title="Удалить категорию?" OnConfirm="async ()
+                            => await DeleteTemplate(Template.Id)" OkText="Да" CancelText="Нет">
+                        <Button>Удалить</Button>
+                    </Popconfirm>
+                </SpaceItem>
+            </Space>
+        </ActionColumn>
+    </RowTemplate>
+</Table>
+
+@code {
+    [Parameter] public List<TemplateView> Templates { get; set; }
+    [Parameter] public EventCallback OnTemplateChange { get; set; }
+
+    public async Task DeleteTemplate(Guid id)
+    {
+        var result = await _service.DeleteTemplate(id);
+        _logger.Log(id, result, "Удалена категория.", Logging.Entities.ModuleAstrum.Inventory);
+        await OnTemplateChange.InvokeAsync();
+    }
+}

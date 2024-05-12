@@ -1,0 +1,57 @@
+﻿@using AntDesign
+@using Astrum.Market.Services
+@using Astrum.Market.ViewModels
+@using Astrum.SharedLib.Common.Extensions
+
+@inject IMarketOrderService _marketOrderService
+
+@if (loading)
+{
+    <Spin/>
+}
+else
+{
+    <h3>Заказы</h3>
+    <Table TItem="MarketOrderFormResponse" DataSource="orders">
+        <ChildContent>
+            <Column TData="string" Title="Заказчик">@context.User.Name</Column>
+            <Column TData="string" Title="Комментарий">@context.Comment</Column>
+            <Column TData="string" Title="Статус Заказа">@context.Status?.GetDisplayName()</Column>
+            <ActionColumn>
+                <OrderModal Order="@context" OnChange="@GetOrders" />
+            </ActionColumn>
+        </ChildContent>
+        <ExpandTemplate Context="rowData">
+            <Table TItem="OrderProductFormResponse" DataSource="@rowData.Data.OrderProducts" HidePagination>
+                <Column TData="Template" Title="Товар">
+                    <img src="@context.Product.CoverUrl" width="100" />
+                </Column>
+                <Column TData="string" Title="Название">@context.Product.Name</Column>
+                <Column TData="string" Title="Цена">@(context.Product.Price * context.Amount)</Column>
+                <Column TData="string" Title="Количество">@context.Amount</Column>
+                <Column TData="string" Title="Статус товара">@context.Status.GetDisplayName()</Column>
+                <ActionColumn>
+                    <OrderProductModal Order="@rowData.Data" OrderProduct="@context" OnChange="@GetOrders" />
+                </ActionColumn>
+            </Table>
+        </ExpandTemplate>
+    </Table>
+}
+
+
+@code {
+    private List<MarketOrderFormResponse> orders = new List<MarketOrderFormResponse>();
+    private bool loading = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetOrders();
+    }
+
+    private async Task GetOrders()
+    {
+        loading = true;
+        orders = await _marketOrderService.GetAllOrders();
+        loading = false;
+    }
+}

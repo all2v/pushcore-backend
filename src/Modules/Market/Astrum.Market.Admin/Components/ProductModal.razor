@@ -1,0 +1,212 @@
+﻿@using AntDesign
+@using Astrum.Market.Aggregates
+@using Astrum.Market.Services
+@using Astrum.Market.ViewModels
+@using Astrum.Storage.Application.ViewModels
+@using System.Net.Http.Headers
+@using Astrum.Storage.ViewModels
+
+@inject IProductService _productService
+@inject ILogAdminService _logger
+@*//TODO: rework creation - add more required fields!*@
+@if (Editing)
+{
+    <Button OnClick="ShowModal">Редактировать</Button>
+}
+else
+{
+    <Button Class="mb-2" Type="primary" OnClick="@ShowModal">
+        Создать товар
+    </Button>
+}
+@*OnOk="@HandleOk"*@
+@*OnCancel="@HandleCancel"*@@*
+        OkText="@buttonTitle"
+        CancelText="@("Отмена")"*@
+<Modal Title="@(Editing ? "Редактирование товара" : "Создание товара")"
+       Visible="@_visible" Footer="null"
+       OnCancel="HandleCancel" AfterClose="async () => {
+    if (OnEdited.HasDelegate && Editing == true)
+    {
+        await OnEdited.InvokeAsync();
+    }}">
+    <Form Model="@product"
+          LabelColSpan="8"
+          WrapperColSpan="16"
+          ValidateMode="FormValidateMode.Rules"
+          OnFinish="@HandleOk">
+        <FormItem Label="Название"
+            Rules=@(new FormValidationRule[]{ new FormValidationRule{ Required = true, Message = "Название обязательно!" } })>
+            <Input BindOnInput @bind-Value="@context.Name"/>
+        </FormItem>
+        <FormItem Label="Краткое описание"
+                  Rules=@(new FormValidationRule[]{ new FormValidationRule{ Required = true, Message = "Описание обязательно!" } })>
+            <Input BindOnInput @bind-Value="@context.Summary" />
+        </FormItem>
+        <FormItem Label="Подробное описание">
+            <TextArea Rows="5" @bind-Value="@context.Description"></TextArea>
+        </FormItem>
+        <FormItem Label="Цена">
+            <AntDesign.InputNumber Min="0" @bind-Value="@context.Price" DefaultValue="0"/>
+        </FormItem>
+        <FormItem Label="Остаток">
+            <AntDesign.InputNumber Min="0" @bind-Value="@context.Remain" DefaultValue="0" />
+        </FormItem>
+        <FormItem Label="Доступен">
+            <Checkbox @bind-Value="@isAvailable" />
+        </FormItem>
+        <FormItem Label="Бесконечный">
+            <Checkbox @bind-Value="@isInfinite"/>
+        </FormItem>
+        <Row Class="mt-2">
+            <InputFile id="fileInput" OnChange="LoadFile" hidden multiple accept=".jpeg, .png, .svg, .jpg"/>
+            <label class="ant-btn" for="fileInput">
+                <Icon Type="upload" />
+                Прикрепить файл
+            </label>
+            <Spin Style="margin-top: 10px; margin-bottom: 10px;" Spinning=@uploadSpin></Spin>
+        </Row>
+        
+        <Row Class="mt-2">
+            @if (!string.IsNullOrWhiteSpace(base64))
+            {
+                <img src="@base64" alt="avatar" style="width: 25%" />
+            }
+            else if (!string.IsNullOrWhiteSpace(imageSrc))
+            {
+                <img src="@imageSrc" alt="avatar" style="width: 25%" />
+            }
+        </Row>
+
+        <Button Disabled=_buttonDisabled Type="@ButtonType.Primary" HtmlType="submit" Style="margin-top: 10px;">
+            @if (Editing)
+            {
+                @("Сохранить")
+            }
+            else
+            {
+                @("Добавить")
+            }
+            
+        </Button>
+    </Form>
+</Modal>
+
+@code {
+    [Parameter] public EventCallback<MarketProductFormResponse> OnCreated { get; set; }
+    [Parameter] public EventCallback<MarketProductFormResponse> OnEdited { get; set; }
+    [Parameter] public bool Editing { get; set; } = false;
+    [Parameter] public MarketProductFormResponse EditingProduct { get; set; }
+
+    private Dictionary<string, object> attrs;
+    private List<UploadFileItem> fileList = new List<UploadFileItem>();
+
+    bool _visible = false;
+    bool editingLoading = false;
+    private FileForm image { get; set; }
+    private bool uploadSpin = false;
+    private string base64;
+
+    private bool isAvailable = false;
+    private bool isInfinite = false;
+    private string imageSrc = string.Empty;
+    private MarketProductFormRequest product = new MarketProductFormRequest();
+
+    private string buttonTitle = "Создать";
+    public bool _buttonDisabled =>
+    string.IsNullOrWhiteSpace(product.Name) ||
+    string.IsNullOrWhiteSpace(product.Summary);
+
+    protected override Task OnInitializedAsync()
+    {
+        attrs = new Dictionary<string, object>
+        {
+            {"Action", "https://www.mocky.io/v2/5cc8019d300000980a055e76" },
+            {"Name", "files" },
+            {"DefaultFileList", fileList},
+            {"ListType", "picture" },
+            {"Class", "upload-list-inline" }
+        };
+
+        return Task.CompletedTask;
+    }
+
+    private void ShowModal()
+    {
+        if (Editing)
+        {
+            product.Name = EditingProduct.Name;
+            product.Summary = EditingProduct.Summary;
+            product.Description = EditingProduct.Description ?? "";
+            product.Price = EditingProduct.Price;
+            product.Remain = EditingProduct.Remain;
+            product.IsAvailable = EditingProduct.IsAvailable;
+            product.IsInfinite = EditingProduct.IsInfinite;
+            imageSrc = EditingProduct.CoverUrl;
+            buttonTitle = "Изменить";
+        }
+        _visible = true;
+    }
+
+    bool BeforeUpload(UploadFileItem file)
+    {
+        var isJpgOrPng = file.Type == "image/jpeg" || file.Type == "image/png";
+        var isLt2M = file.Size / 1024 / 1024 < 2;
+        return isJpgOrPng && isLt2M;
+    }
+
+    private async Task LoadFile(InputFileChangeEventArgs e)
+    {
+        uploadSpin = true;
+        StateHasChanged();
+
+        var file = e.File;
+        using var memoryStream = new MemoryStream();
+        await file.OpenReadStream(e.File.Size).CopyToAsync(memoryStream);
+        var imageBytes = memoryStream.ToArray();
+        image = new FileForm()
+        {
+            ContentType = file.ContentType,
+            FileName = file.Name,
+            FileBytes = imageBytes,
+        };
+        base64 = $"data:image/jpeg;charset=utf-8;base64, {Convert.ToBase64String(imageBytes)}";
+
+        uploadSpin = false;
+        StateHasChanged();
+    }
+
+    private void HandleChange(UploadInfo fileinfo)
+    {
+        if (fileinfo.File.State == UploadState.Success)
+        {
+            fileinfo.File.Url = fileinfo.File.ObjectURL;
+        }
+    }
+
+    private async Task HandleOk(EditContext c)
+    {
+        editingLoading = true;
+        product.IsAvailable = isAvailable;
+        product.IsInfinite = isInfinite;
+        if (Editing)
+        {
+            var result = await _productService.Update(EditingProduct.Id, product);
+            _logger.Log(product, result, "Обновлён продукт.", Logging.Entities.ModuleAstrum.Market);
+        }
+        else
+        {
+            var result = await _productService.Create(product, image);
+            _logger.Log(product, result, "Продукт создан.", Logging.Entities.ModuleAstrum.Market);
+            await OnCreated.InvokeAsync(result.Data);
+        }
+        _visible = false;
+        product = new MarketProductFormRequest();
+        editingLoading = false;
+    }
+
+    private void HandleCancel()
+    {
+        _visible = false;
+    }
+}

@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+	  <TargetFramework>net7.0</TargetFramework> 
+	  <TargetFrameworkVersion>7.0</TargetFrameworkVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="DataSeeding" />
+    <Folder Include="Caching" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\SharedLib\Persistence\Astrum.SharedLib.Persistence.csproj" />
+    <ProjectReference Include="..\..\..\Infrastructure\Astrum.Infrastructure\Astrum.Infrastructure.csproj" />
+    <ProjectReference Include="..\Application\Astrum.Application.Application.csproj" />
+  </ItemGroup>
+
+</Project>

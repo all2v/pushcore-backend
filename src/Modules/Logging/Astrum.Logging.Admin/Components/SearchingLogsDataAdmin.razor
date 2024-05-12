@@ -1,0 +1,80 @@
+﻿@using Microsoft.AspNetCore.Components
+@using Astrum.Logging.ViewModels.Filters
+<Form Model="FilterAdmin" OnFinish="OnFinish">
+    <Row Align="middle" Justify="start">
+        <GridCol Span="3">
+            <FormItem>
+                <EnumSelect DefaultValue="null" TEnum="ModuleAstrum?" @bind-Value=FilterAdmin.Module Placeholder="Модуль">
+                </EnumSelect>
+            </FormItem>
+            <FormItem>
+                <EnumSelect DefaultValue="null" TEnum="LogLevel?" @bind-Value=FilterAdmin.LogLevel Placeholder="Уровень">
+                </EnumSelect>
+            </FormItem>
+        </GridCol>
+        <GridCol Style="margin-left: 1%">
+            <FormItem Style="width:200px;">
+                <DatePicker Style="width:200px;" Size="middle" @bind-Value=FilterAdmin.BeginPeriod Placeholder="@beginDatePlaceholder"></DatePicker>
+            </FormItem>
+            <FormItem Style="width:200px;">
+                <DatePicker Style="width:200px;" Size="middle" @bind-Value=FilterAdmin.EndPeriod Placeholder="@endDatePlaceholder"></DatePicker>
+            </FormItem>
+        </GridCol>
+        <GridCol Span="3" Style="margin-left: 1%">
+            <FormItem>
+                <EnumSelect DefaultValue="null" TEnum="SharedLib.Common.Results.ResultStatus?" @bind-Value=FilterAdmin.Status Placeholder="Тип запроса" />
+            </FormItem>
+            <FormItem>
+                <Input @bind-Value=FilterAdmin.Description Placeholder="Описание" />
+            </FormItem>
+        </GridCol>
+        <GridCol Span="3" Style="margin-left: 1%">
+            <FormItem>
+                <Input @bind-Value=FilterAdmin.BodyRequest Placeholder="Тело запроса" />
+            </FormItem>
+            <FormItem>
+                <Input @bind-Value=FilterAdmin.RequestResponse Placeholder="Ответ запроса" />
+            </FormItem>
+        </GridCol>
+        <GridCol Style="margin-left: 1%">
+            <div title="применить фильтры">
+                <FormItem>
+                    <Button HtmlType="submit" Type="@ButtonType.Primary" Icon="@IconType.Outline.Search" Shape="@ButtonShape.Circle" Size="middle"></Button>
+                </FormItem>
+            </div>
+        </GridCol>
+        <GridCol Style="margin-left: 1%">
+            <div title="очистить фильтры">
+                <FormItem>
+                    <Button Type="@ButtonType.Primary" Danger Icon="@IconType.Outline.Delete" OnClick="ClearFilter" Size="middle"></Button>
+                </FormItem>
+            </div>
+        </GridCol>
+    </Row>
+</Form>
+
+
+@code {
+    [Parameter] public LogFilterAdmin? FilterAdmin { get; set; }
+    [Parameter] public EventCallback OnEditFilteringAdmin { get; set; }
+    private string beginDatePlaceholder = "Начало периода";
+    private string endDatePlaceholder = "Конец периода";
+
+    private async Task OnFinish(EditContext context)
+    {
+        var model = context.Model as LogFilterAdmin;
+        await OnEditFilteringAdmin.InvokeAsync();
+    }
+    private async Task ClearFilter()
+    {
+        FilterAdmin.Module = null;
+        FilterAdmin.LogLevel = null;
+        FilterAdmin.BeginPeriod = null;
+        FilterAdmin.EndPeriod = null;
+        FilterAdmin.Status = null;
+        FilterAdmin.RequestResponse = null;
+        FilterAdmin.BodyRequest = null;
+        FilterAdmin.Description = null;
+        await OnEditFilteringAdmin.InvokeAsync();
+    }
+}

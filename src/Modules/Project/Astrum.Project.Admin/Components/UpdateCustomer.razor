@@ -1,0 +1,82 @@
+﻿@using Astrum.Logging.Services
+@using Astrum.Projects.Services
+@using Astrum.Projects.ViewModels.Requests
+@using Astrum.Projects.ViewModels.Views
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Forms
+@inject ICustomerService _customerService;
+@inject ILogAdminService _logger;
+
+<Button Type="Primary" OnClick="ShowModal">Редактировать</Button>
+
+<Modal AfterClose="async () => { if (OnCustomerEdited.HasDelegate)
+    {
+        await OnCustomerEdited.InvokeAsync();
+    }}"
+       Visible="_visible"
+       OnCancel="@HandleCancel"
+       Footer="null">
+    <h3 class="text-center">Редактирование заказчика</h3>
+    <Form Model="Customer" OnFinish="OnFinish">
+        <FormItem Style="margin: 20px 0;">
+            <Input OnInput="@((ChangeEventArgs name) => OnChange(name))" Placeholder="Название заказчика" @bind-Value="Customer.Name" TValue="string" />
+        </FormItem>
+        <FormItem>
+            <Button Type="@ButtonType.Primary" HtmlType="submit" Disabled="_updateButtonDisabled">
+                Редактировать
+            </Button>
+        </FormItem>
+        @if (_customerAlreadyExists)
+        {
+            <p style="color: #ff4d4f">Такой заказчик уже существует!</p>
+        }
+    </Form>
+</Modal>
+
+@code {
+    [Parameter] public CustomerView Customer { get; set; }
+    [Parameter] public EventCallback OnCustomerEdited { get; set; }
+    private bool _customerAlreadyExists = false;
+    private bool _visible;
+    public bool _updateButtonDisabled = false;
+    private string _formerName; // прежнее название
+
+    public void ShowModal()
+    {
+        _formerName = Customer.Name;
+        _customerAlreadyExists = false;
+        _visible = true;
+    }
+
+    public void HandleCancel()
+    {
+        Customer.Name = _formerName;
+        _visible = false;
+    }
+
+    public async Task OnFinish(EditContext context)
+    {
+        var request = context.Model as CustomerView;
+        if (!String.IsNullOrWhiteSpace(request?.Name))
+        {
+            if (request.Name.ToLower().Trim() == _formerName.ToLower().Trim())
+            {
+                _visible = false;
+                return;
+            }
+            if (await _customerService.Exist(request.Name))
+            {
+                _customerAlreadyExists = true;
+                return;
+            }
+            var result = await _customerService.Update(request);
+            _logger.Log(request, result, "Обновлена категория.", Logging.Entities.ModuleAstrum.Appeal);
+            _visible = false;
+        }
+    }
+
+    private void OnChange(ChangeEventArgs name)
+    {
+        _updateButtonDisabled = String.IsNullOrWhiteSpace(name.Value.ToString());
+    }
+}

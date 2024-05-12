@@ -1,0 +1,132 @@
+﻿@using Astrum.Storage.Services;
+@using Astrum.Storage.ViewModels;
+@inject ITemplatesService _service
+@inject IMapper _mapper;
+@inject IFileStorage _fileStorage;
+@inject ILogAdminService _logger;
+
+
+<Button Type="Primary" OnClick="ShowModal">Редактировать</Button>
+
+<Modal AfterClose="async () => { if (OnTemplateEdited.HasDelegate)
+    {
+        await OnTemplateEdited.InvokeAsync();
+    }}" Width="1000" Visible="_visible" OnCancel="@HandleCancel" Footer="null">
+    <h3 class="text-center">Редактирование категории</h3>
+    <Form Model="mappedTemplate" OnFinish="OnFinish" ValidateMode="FormValidateMode.Rules">
+        <FormItem Required Label="Название категории" Style="margin-top: 30px;"
+                  Rules=@(new FormValidationRule[] { new FormValidationRule { Required = true, Message = "Название обязательно!" } })>
+            <Input BindOnInput Placeholder="категория" @bind-Value="@mappedTemplate.Title"></Input>
+        </FormItem>
+
+        @if (TemplateAlreadyExists)
+        {
+            <p style="color: #ff4d4f">Такая категория уже существует!</p>
+        }
+
+        <FormItem Label="Изображение категории">
+            <InputFile id="fileInput" OnChange="UploadFile" hidden />
+            <Upload Name="file" FileList="fileList">
+                <label class="ant-btn" for="fileInput">
+                    <Icon Type="upload" />
+                    Прикрепить файл
+                </label>
+            </Upload>
+            <Spin Style="margin-top: 10px; margin-bottom: 10px;" Spinning=@_fileLoading></Spin>
+        </FormItem>
+
+        <UpdateCharacteristics Characteristics="@mappedTemplate.Characteristics"></UpdateCharacteristics>
+
+        <FormItem>
+            <Button Disabled="_updateButtonDisabled" Type="@ButtonType.Primary" HtmlType="submit">
+                Обновить
+            </Button>
+        </FormItem>
+    </Form>
+</Modal>
+
+@code {
+    [Parameter] public EventCallback OnTemplateEdited { get; set; }
+    [Parameter] public TemplateView Template { get; set; }
+
+    private TemplateUpdateRequest mappedTemplate { get; set; } = new();
+    private List<UploadFileItem> fileList = new List<UploadFileItem>();
+    private FileForm Image { get; set; }
+
+    private bool _fileLoading;
+    private bool _visible;
+    private bool TemplateAlreadyExists;
+    private bool _updateButtonDisabled =>
+    string.IsNullOrWhiteSpace(Template.Title) ||
+    Template.LinkImage == null;
+
+    private async Task ShowModal()
+    {
+        _visible = true;
+        if (Template.PictureId != null)
+        {
+            var file = await _fileStorage.GetFile(Template.PictureId.Value);
+            fileList = new List<UploadFileItem>()
+            {
+                new UploadFileItem()
+                {
+                FileName = file.FileName
+                }
+            };
+        }
+        mappedTemplate = _mapper.Map<TemplateUpdateRequest>(Template);
+        StateHasChanged();
+    }
+
+    private void HandleCancel()
+    {
+        _visible = false;
+    }
+
+    private async Task OnFinish(EditContext context)
+    {
+        var model = context.Model as TemplateUpdateRequest;
+        if (!String.IsNullOrWhiteSpace(model?.Title))
+        {
+            if (await _service.TemplateAlreadyExists(model.Title, Template.Id))
+            {
+                TemplateAlreadyExists = true;
+                return;
+            }
+            var result = await _service.UpdateTemplate(Template.Id, model);
+            _logger.Log(model, result, "Обновлена категория.", Logging.Entities.ModuleAstrum.Inventory);
+            _visible = false;
+        }
+    }
+
+    private async Task UploadFile(InputFileChangeEventArgs e)
+    {
+        _fileLoading = true;
+        StateHasChanged();
+
+        var file = e.File;
+        using var memoryStream = new MemoryStream();
+        await file.OpenReadStream(e.File.Size).CopyToAsync(memoryStream);
+        var imageBytes = memoryStream.ToArray();
+
+        Image = new FileForm()
+            {
+                ContentType = file.ContentType,
+                FileName = file.Name,
+                FileBytes = imageBytes,
+            };
+
+        fileList = new List<UploadFileItem>()
+        {
+            new UploadFileItem()
+            {
+                FileName = file.Name,
+                Size = file.Size
+            }
+        };
+
+        _fileLoading = false;
+        mappedTemplate.Image = Image;
+        StateHasChanged();
+    }
+}

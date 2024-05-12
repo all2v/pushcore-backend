@@ -1,0 +1,54 @@
+﻿@using Astrum.Account.Features.Achievement;
+@using AntDesign;
+
+<div class="col-xl-3">
+    <div class="achievement-card">
+        <div class="achievement-custom-card card">
+            <div class="achievement-card-avatar">
+                <div class="achievement-card-icon-container">
+                    <img src="@Achievement.IconUrl" class="achievement-card-icon">
+                </div>
+            </div>
+            <div class="text-center achievement-card-title">
+                <h4 onclick="@HandleAchievementClick">@Achievement.Name</h4>
+            </div>
+            <div class="text-center achievement-card-description autoShowHide">
+                <h6>@Achievement.Description</h6>
+            </div>
+            @if(!CreateAchievementCard)
+            {
+                <div class="deleteAchievement">
+                    <Button OnClick="Delete">Удалить</Button>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public AchievementResponse Achievement { get; set; }
+    [Parameter] public bool CreateAchievementCard { get; set; } = false;
+    [Parameter] public EventCallback CreateAchievement { get; set; }
+    [Parameter] public EventCallback<AchievementResponse> EditAchievement { get; set; }
+    [Parameter] public EventCallback<AchievementResponse> DeleteAchievement { get; set; }
+
+    protected override void OnInitialized()
+    {
+        if (CreateAchievementCard)
+            Achievement = new() { Name = "Создать достижение" };
+    }
+
+    private async Task HandleAchievementClick()
+    {
+        if (CreateAchievementCard)
+            await CreateAchievement.InvokeAsync();
+        else
+            await EditAchievement.InvokeAsync(Achievement);
+    }
+
+    private async Task Delete()
+    {
+        await DeleteAchievement.InvokeAsync(Achievement);
+    }
+
+}

@@ -1,0 +1,36 @@
+﻿@using Astrum.Telegram.Application.ViewModels;
+@using Astrum.Telegram.Domain.Aggregates;
+@using Astrum.Telegram.Services;
+@inject ITelegramChatService _telegramChatService;
+
+
+<Table DataSource="TelegramChats">
+    <RowTemplate Context="TelegramChat">
+        <Column TData="string" Title="Название чата" DataIndex="@nameof(ChatForm.Name)">
+            @TelegramChat.Name
+        </Column>
+        <Column TData="int" Title="Id чата" DataIndex="@nameof(ChatForm.ChatId)">
+            @TelegramChat.ChatId
+        </Column>
+        <ActionColumn Width="100">
+            <Space>
+                <SpaceItem>
+                    <Popconfirm Title="Удалить чат?" OnConfirm="async () => await DeleteChat(TelegramChat.Id)" OkText="Да" CancelText="Нет">
+                        <Button>Удалить</Button>
+                    </Popconfirm>
+                </SpaceItem>
+            </Space>
+        </ActionColumn>
+    </RowTemplate>
+</Table>
+
+@code {
+    [Parameter] public List<ChatForm> TelegramChats { get; set; }
+    [Parameter] public EventCallback OnChatsChange { get; set; }
+
+    public async Task DeleteChat(Guid id)
+    {
+        //var chat = await _telegramChatService.DeleteChat(id);
+        await OnChatsChange.InvokeAsync();
+    }
+}

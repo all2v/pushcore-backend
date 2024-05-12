@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+		<TargetFramework>net7.0</TargetFramework> 
+		<TargetFrameworkVersion>7.0</TargetFrameworkVersion>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+
+    <ItemGroup>
+        <PackageReference Include="AutoMapper" Version="12.0.0" />
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\SharedLib\Application\Astrum.SharedLib.Application.csproj" />
+        <ProjectReference Include="..\..\SharedLib\Domain\Astrum.SharedLib.Domain.csproj" />
+        <ProjectReference Include="..\..\SharedLib\Persistence\Astrum.SharedLib.Persistence.csproj" />
+        <ProjectReference Include="..\Astrum.Infrastructure\Astrum.Infrastructure.csproj" />
+    </ItemGroup>
+
+</Project>

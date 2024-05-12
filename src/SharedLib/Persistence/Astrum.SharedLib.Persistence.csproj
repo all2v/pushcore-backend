@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+		<TargetFramework>net7.0</TargetFramework> 
+		<TargetFrameworkVersion>7.0</TargetFrameworkVersion>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+    
+    <ItemGroup>
+        <PackageReference Include="Ardalis.Specification.EntityFrameworkCore" Version="6.1.0" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.0" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="7.0.0" />
+        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="7.0.0" />
+        <PackageReference Include="Sakura.AspNetCore.PagedList" Version="2.0.2" />
+        <PackageReference Include="Sakura.AspNetCore.PagedList.Async" Version="1.1.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\Infrastructure\Astrum.Infrastructure\Astrum.Infrastructure.csproj" />
+        <ProjectReference Include="..\..\Modules\Identity\Application\Astrum.Identity.Application.csproj" />
+        <ProjectReference Include="..\Application\Astrum.SharedLib.Application.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Compile Remove="Repositories.V1\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <EmbeddedResource Remove="Repositories.V1\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Remove="Repositories.V1\**" />
+    </ItemGroup>
+
+</Project>

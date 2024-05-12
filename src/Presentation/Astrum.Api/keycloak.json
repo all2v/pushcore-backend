@@ -1,0 +1,12 @@
+﻿{
+  "realm": "astrum",
+  "auth-server-url": "http://localhost:28080/auth/",
+  "ssl-required": "none",
+  "resource": "api-client",
+  "credentials": {
+    "secret": "lNyJHkQsALyrkZrwecDoORjyeEu2O8km"
+  },
+  "verify-token-audience": false,
+  "public-client": true,
+  "confidential-port": 0
+}

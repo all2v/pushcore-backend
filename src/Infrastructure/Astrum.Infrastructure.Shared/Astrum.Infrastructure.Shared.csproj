@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+		<TargetFramework>net7.0</TargetFramework> 
+		<TargetFrameworkVersion>7.0</TargetFrameworkVersion>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="MassTransit" Version="8.0.8" />
+        <PackageReference Include="Microsoft.AspNetCore.Localization" Version="2.2.0" />
+        <PackageReference Include="SixLabors.ImageSharp" Version="1.0.4" />
+        <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="6.4.0" />
+        <PackageReference Include="System.Linq.Dynamic.Core" Version="1.2.23" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\SharedLib\Common\Astrum.SharedLib.Common.csproj" />
+        <ProjectReference Include="..\..\SharedLib\Application\Astrum.SharedLib.Application.csproj" />
+        <ProjectReference Include="..\Astrum.Infrastructure.Resources\Astrum.Infrastructure.Resources.csproj" />
+        <ProjectReference Include="..\Astrum.Infrastructure\Astrum.Infrastructure.csproj" />
+    </ItemGroup>
+
+</Project>

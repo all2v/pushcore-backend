@@ -1,0 +1,45 @@
+﻿@inject IInventoryItemsService _service;
+@inject ILogAdminService _logger;
+@using Astrum.SharedLib.Persistence.Helpers;
+
+<Table DataSource="InventoryItems" TableLayout="fixed">
+    <RowTemplate Context="InventoryItem">
+        <Column TData="string" Title="Модель" DataIndex="@nameof(InventoryItem.Model)">
+            @InventoryItem.Model
+        </Column>
+        <Column TData="string" Title="Категория">
+            @(InventoryItem.TemplateId != null ? InventoryItem.Template.Title : "Отсутствует")
+        </Column>
+        <Column TData="string" Title="Собственник">
+            @(InventoryItem.User != null ? InventoryItem.User.NameWithSurname : "Отсутствует")
+        </Column> 
+        <Column TData="string" Title="Подробности">
+            <DetailsInventoryItem InventoryItem="@InventoryItem"></DetailsInventoryItem>
+        </Column>
+        <ActionColumn>
+            <Space>
+                <SpaceItem>
+                    <UpdateInventoryItem InventoryItem="@InventoryItem" OnInventoryItemEdited="OnInventoryItemsChange"></UpdateInventoryItem>
+                </SpaceItem>
+                <SpaceItem>
+                    <Popconfirm Title="Удалить товар?" OnConfirm="async ()
+                            => await DeleteInventoryItem(InventoryItem.Id)" OkText="Да" CancelText="Нет">
+                        <Button>Удалить</Button>
+                    </Popconfirm>
+                </SpaceItem>
+            </Space>
+        </ActionColumn>
+    </RowTemplate>
+</Table>
+
+@code {
+    [Parameter] public List<InventoryItemView> InventoryItems { get; set; }
+    [Parameter] public EventCallback OnInventoryItemsChange { get; set; }
+
+    public async Task DeleteInventoryItem(Guid id)
+    {
+        var result = await _service.Delete(id);
+        _logger.Log(id, result, "Удалён товар.", Logging.Entities.ModuleAstrum.Inventory);
+        await OnInventoryItemsChange.InvokeAsync();
+    }
+}

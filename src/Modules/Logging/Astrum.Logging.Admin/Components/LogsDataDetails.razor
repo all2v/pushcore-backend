@@ -1,0 +1,45 @@
+﻿<div title="Подробнее">
+    <Button Type="link" OnClick="ShowModal">
+        <span style="word-break: break-all; white-space: normal; overflow: hidden;
+                 text-overflow: ellipsis; color:black; max-height:85px; display:block;">
+            @ChildContent
+        </span><Icon Height="30" Width="30" Fill="#0066fe" Type="@IconType.Outline.Fullscreen" Alt="Подробнее" Theme="@IconThemeType.Outline"></Icon>
+    </Button>
+</div>
+
+<Modal Width=600 Visible="_visible" OnCancel="@HandleCancel" Footer="null">
+    <h3 class="text-center">Логи HTTP-запросов</h3>
+    <dl class="row fs-5">
+        <dt style="margin-top: 20px; font-size: 16px;" class="fw-bolder col-sm-3">Тело запроса</dt>
+        <div class="rounded text-dark border border-primary" style="background: #e9e9e9; overflow-y:visible; overflow-x:hidden; max-height: 250px;">
+            <dd style="width: 100%; float:left; white-space: break-spaces; word-break: break-all; font-size:12px;" class="col-sm-9">@(@Log.BodyRequest != null ? @Log.BodyRequest : "Тело пустое.")</dd>
+        </div>
+
+        <dt style="margin-top: 20px; font-size: 16px;" class="fw-bolder col-sm-3">Ответ запроса</dt>
+        <div class="rounded text-dark border border-primary" style="background: #e9e9e9; overflow-y:visible; overflow-x:hidden; max-height: 250px;">
+            <dd style="width: 100%; float:left; white-space: break-spaces; word-break: break-all; font-size:12px;" class="col-sm-9">@(@Log.RequestResponse != null ? @Log.RequestResponse : "Тело пустое.")</dd>
+        </div>
+    </dl>
+</Modal>
+
+@code {
+    [Parameter] public LogHttpView Log { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    public bool _visible;
+
+    private void ShowModal()
+    {
+        _visible = true;
+    }
+
+    private void HandleCancel()
+    {
+        _visible = false;
+    }
+
+    private async Task OnFinish()
+    {
+        _visible = false;
+    }
+}

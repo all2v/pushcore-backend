@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Telegram.Bot" Version="18.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Infrastructure\Astrum.Infrastructure\Astrum.Infrastructure.csproj" />
+    <ProjectReference Include="..\Application\Astrum.Telegram.Application.csproj" />
+    <ProjectReference Include="..\Backoffice\Astrum.Telegram.Backoffice.csproj" />
+    <ProjectReference Include="..\DomainServices\Astrum.Telegram.DomainServices.csproj" />
+    <ProjectReference Include="..\Domain\Astrum.Telegram.Domain.csproj" />
+    <ProjectReference Include="..\Infrastructure\Astrum.Telegram.Infrastructure.csproj" />
+    <ProjectReference Include="..\Persistence\Astrum.Telegram.Persistence.csproj" />
+  </ItemGroup>
+
+</Project>

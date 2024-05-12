@@ -1,0 +1,53 @@
+﻿@page "/admin/users"
+@using Astrum.Account.Application.ViewModels
+@using Astrum.SharedLib.Common.Results
+@inject IUserProfileService _userProfileService
+@inject IPositionsService _positionsService
+
+<PageTitle>Пользователи</PageTitle>
+
+<h3>Пользователи</h3>
+<div style="display: flex; flex-direction: row; flex-wrap: nowrap; justify-content: flex-end; margin-bottom: 20px;">
+    <div style="margin-left:20px;">
+        <Button OnClick="Reset">Ресет таймланов</Button>
+    </div>
+    <div style="margin-left: 20px;">
+        <AssignAchievement Users="Users"/>
+    </div>
+    <div style="margin-left: 20px;">
+        <ChangeMoney OnBalanceChanged="@UpdateUsers" Users="Users" Type="Начисление валюты"/>
+    </div>
+    <div style="margin-left: 20px;">
+        <ChangeMoney OnBalanceChanged="@UpdateUsers" Users="Users" Type="Вычисление валюты"/>
+    </div>
+    <div style="margin-left: 20px;">
+        <CreateUser OnUserCreated="@UpdateUsers"/>
+    </div>
+</div>
+<UsersSearch OnEditFiltering="UpdateUsers" Filter="filter" PositionForms="positionForms"/>
+<UsersTable OnUserEdited="UpdateUsers" Users="Users" Loading="loading" />
+
+@code {
+    private UsersFilter filter = new();
+    List<UserProfileSummary> Users = new List<UserProfileSummary>();
+    private List<PositionForm> positionForms;
+    private bool loading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        positionForms = await _positionsService.GetPositions();
+        await UpdateUsers();
+    }
+
+    async Task UpdateUsers()
+    {
+        loading = true;
+        Users = await _userProfileService.GetAllUsersProfilesSummariesAsync(filter);
+        loading = false;
+    }
+
+    private async Task Reset()
+    {
+        await _userProfileService.ResetTimelines();
+    }
+}

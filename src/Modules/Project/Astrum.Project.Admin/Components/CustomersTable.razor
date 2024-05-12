@@ -1,0 +1,37 @@
+﻿@using Astrum.Logging.Services
+@using Astrum.Projects.Services
+@using Astrum.Projects.ViewModels.Views
+@inject ICustomerService _customerService;
+@inject ILogAdminService _logger;
+
+<Table DataSource="Customers">
+    <RowTemplate Context="customer">
+        <Column TData="string" Title="Название" DataIndex="@nameof(customer.Name)">
+            @customer.Name
+        </Column>
+        <ActionColumn Width="100">
+            <Space>
+                <SpaceItem>
+                    <UpdateCustomer Customer="@customer" OnCustomerEdited="OnCustomersChange" />
+                </SpaceItem>
+                <SpaceItem>
+                    <Popconfirm Title="Удалить заказчика?" OnConfirm="async () => await DeleteCustomer(customer.Id)" OkText="Да" CancelText="Нет">
+                        <Button>Удалить</Button>
+                    </Popconfirm>
+                </SpaceItem>
+            </Space>
+        </ActionColumn>
+    </RowTemplate>
+</Table>
+
+@code {
+    [Parameter] public List<CustomerView> Customers { get; set; }
+    [Parameter] public EventCallback OnCustomersChange { get; set; }
+
+    public async Task DeleteCustomer(Guid customerId)
+    {
+        var result = await _customerService.Delete(customerId);
+        _logger.Log(customerId, result, "Удален заказчик.", Logging.Entities.ModuleAstrum.Project);
+        await OnCustomersChange.InvokeAsync();
+    }
+}

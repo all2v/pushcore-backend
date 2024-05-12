@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Keycloak.AuthServices.Sdk" Version="1.5.0" />
+    <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="11.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="7.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\SharedLib\Domain\Astrum.SharedLib.Domain.csproj" />
+    <ProjectReference Include="..\..\Account\DomainServices\Astrum.Account.DomainServices.csproj" />
+    <ProjectReference Include="..\..\Account\Domain\Astrum.Account.Domain.csproj" />
+    <ProjectReference Include="..\Domain\Astrum.IdentityServer.Domain.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Astrum.Account.Application">
+      <HintPath>..\..\..\Presentation\Astrum.Api\bin\Debug\net7.0\Astrum.Account.Application.dll</HintPath>
+    </Reference>
+    <Reference Include="Astrum.Account.DomainServices">
+      <HintPath>..\..\..\Presentation\Astrum.Api\bin\Debug\net7.0\Astrum.Account.DomainServices.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>

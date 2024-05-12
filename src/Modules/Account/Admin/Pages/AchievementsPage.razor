@@ -1,0 +1,47 @@
+﻿@page "/admin/achievements"
+@using Astrum.Account.Application.Features.Achievement.Queries.GetAchievementsList;
+@using Astrum.Account.Features.Achievement;
+@inject IMediator _mediator;
+@inject IAchievementService _achievementService
+
+<PageTitle>Достижения</PageTitle>
+
+<h3>Достижения</h3>
+<div class="row">
+    <AchievementCard CreateAchievementCard="true" CreateAchievement="ShowAchievementCreateModal" />
+    @foreach (var achievement in Achievements)
+    {
+        <AchievementCard DeleteAchievement="DeleteAchievement" EditAchievement="ShowAchievementEditModal" Achievement="achievement" />
+    }
+</div>
+<CreateAchievement OnAchievementCreated="OnInitializedAsync" @ref="CreateAchievementModal" />
+<EditAchievement OnAchievementEdited="OnInitializedAsync" @ref="EditAchievementModal" />
+
+@code {
+    public List<AchievementResponse> Achievements = new();
+    private CreateAchievement CreateAchievementModal;
+    private EditAchievement EditAchievementModal;
+
+    protected async override Task OnInitializedAsync()
+    {
+        var achievementsQuery = new GetAchievementsListQuery();
+        Achievements = await _mediator.Send(achievementsQuery);
+    }
+
+    private void ShowAchievementCreateModal()
+    {
+        CreateAchievementModal.ShowModal();
+    }
+
+    private async Task ShowAchievementEditModal(AchievementResponse achievement)
+    {
+        await EditAchievementModal.ShowModal(achievement);
+    }
+
+    private async Task DeleteAchievement(AchievementResponse arg)
+    {
+        await _achievementService.DeleteAsync(arg.Id);
+        await OnInitializedAsync();
+    }
+
+}

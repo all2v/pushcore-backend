@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+		<TargetFramework>net7.0</TargetFramework> 
+		<TargetFrameworkVersion>7.0</TargetFrameworkVersion>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+
+    <ItemGroup>
+        <Folder Include="Constants" />
+        <Folder Include="Enums" />
+        <Folder Include="ValueObjects" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\SharedLib\Common\Astrum.SharedLib.Common.csproj" />
+        <ProjectReference Include="..\..\..\SharedLib\Domain\Astrum.SharedLib.Domain.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.0" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="7.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Identity.Stores" Version="7.0.0" />
+    </ItemGroup>
+
+</Project>

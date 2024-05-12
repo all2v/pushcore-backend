@@ -1,0 +1,34 @@
+﻿@page "/admin/banner"
+@using Microsoft.AspNetCore.Components.Authorization;
+
+@inject IBannersService _bannersService
+@inject AuthenticationStateProvider _authStateProvider
+
+<PageTitle>Баннер</PageTitle>
+
+<h3>Баннеры</h3>
+<CreateBanner OnBannerCreated="@AppendBanner"/>
+<BannersList OnBannerChanged="@SortBanners" Banners="Banners" />
+
+@code {
+    public List<BannerForm> Banners = new List<BannerForm>();
+
+    protected async override Task OnInitializedAsync()
+    {
+        var state = await _authStateProvider.GetAuthenticationStateAsync();
+        var result = await _bannersService.GetBanners();
+        Banners = result.Data;
+        SortBanners();
+    }
+
+    public void AppendBanner(BannerForm banner)
+    {
+        Banners.Add(banner);
+        SortBanners();
+    }
+
+    public void SortBanners()
+    {
+        Banners = Banners.OrderBy(banner => banner.DateCreated).ToList();
+    }
+}

@@ -1,0 +1,20 @@
+﻿@page "/admin/customers"
+@using Astrum.Projects.Services
+@using Astrum.Projects.ViewModels.Views
+@using Astrum.Project.Admin.Components
+@inject ICustomerService _categoryService;
+
+<PageTitle>Заказчики</PageTitle>
+
+<h3>Заказчики</h3>
+<CreateCustomer OnCustomerCreated="OnInitializedAsync"/>
+<CustomersTable OnCustomersChange="OnInitializedAsync" Customers="Customers" />
+
+@code {
+    public List<CustomerView> Customers = new List<CustomerView>();
+
+    protected async override Task OnInitializedAsync()
+    {
+        Customers = await _categoryService.GetAll();
+    }
+}

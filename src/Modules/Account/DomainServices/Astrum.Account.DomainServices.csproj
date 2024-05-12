@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+		<TargetFramework>net7.0</TargetFramework> 
+		<TargetFrameworkVersion>7.0</TargetFrameworkVersion>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+    <ItemGroup>
+        <Folder Include="Services" />
+    </ItemGroup>
+    <ItemGroup>
+      <ProjectReference Include="..\..\..\SharedLib\Application\Astrum.SharedLib.Application.csproj" />
+      <ProjectReference Include="..\..\..\SharedLib\Domain\Astrum.SharedLib.Domain.csproj" />
+      <ProjectReference Include="..\..\IdentityServer\Domain\Astrum.IdentityServer.Domain.csproj" />
+      <ProjectReference Include="..\Domain\Astrum.Account.Domain.csproj" />
+    </ItemGroup>
+    <ItemGroup>
+      <Reference Include="Astrum.Account.DomainServices">
+        <HintPath>..\..\..\Presentation\Astrum.Api\bin\Debug\net7.0\Astrum.Account.DomainServices.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+</Project>

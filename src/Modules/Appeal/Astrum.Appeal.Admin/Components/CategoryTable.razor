@@ -1,0 +1,34 @@
+﻿@inject IAppealCategoryService _categoryService;
+@inject ILogAdminService _logger;
+
+<Table DataSource="Categories">
+    <RowTemplate Context="Category">
+        <Column TData="string" Title="Название категории" DataIndex="@nameof(Category.Category)">
+            @Category.Category
+        </Column>
+        <ActionColumn Width="100">
+            <Space>
+                <SpaceItem>
+                    <UpdateCategory Category="@Category" OnCategoryEdited="OnCategoriesChange" />
+                </SpaceItem>
+                <SpaceItem>
+                    <Popconfirm Title="Удалить категорию?" OnConfirm="async () => await DeleteCategory(Category.Id)" OkText="Да" CancelText="Нет">
+                        <Button>Удалить</Button>
+                    </Popconfirm>
+                </SpaceItem>
+            </Space>
+        </ActionColumn>
+    </RowTemplate>
+</Table>
+
+@code {
+    [Parameter] public List<AppealCategoryForm> Categories { get; set; }
+    [Parameter] public EventCallback OnCategoriesChange { get; set; }
+
+    public async Task DeleteCategory(Guid categoryId)
+    {
+        var result = await _categoryService.DeleteCategory(categoryId);
+        _logger.Log(categoryId, result, "Удалена категория.", Logging.Entities.ModuleAstrum.Appeal);
+        await OnCategoriesChange.InvokeAsync();
+    }
+}

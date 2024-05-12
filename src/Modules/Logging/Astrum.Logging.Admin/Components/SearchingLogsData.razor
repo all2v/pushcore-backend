@@ -1,0 +1,96 @@
+﻿@using Microsoft.AspNetCore.Components
+@using Astrum.Logging.ViewModels.Filters
+<Form Model="Filter" OnFinish="OnFinish">
+    <Row Align="middle" Justify="start">
+        <GridCol Span="3">
+            <FormItem>
+                <EnumSelect DefaultValue="null" TEnum="ModuleAstrum?" @bind-Value=Filter.Module Placeholder="Модуль">
+                </EnumSelect>
+            </FormItem>
+            <FormItem>
+                <EnumSelect DefaultValue="null" TEnum="LogLevel?" @bind-Value=Filter.LogLevel Placeholder="Уровень">
+                </EnumSelect>
+            </FormItem>
+        </GridCol>
+        <GridCol Style="margin-left: 1%">
+            <FormItem Style="width: 150px;">
+                <DatePicker Style="width: 150px;" Size="middle" @bind-Value=Filter.BeginPeriod Placeholder="@beginDatePlaceholder"></DatePicker>
+            </FormItem>
+            <FormItem Style="width: 150px;">
+                <DatePicker Style="width: 150px;" Size="middle" @bind-Value=Filter.EndPeriod Placeholder="@endDatePlaceholder"></DatePicker>
+            </FormItem>
+        </GridCol>
+        <GridCol Span="3" Style="margin-left: 1%">
+            <FormItem>
+                <Select TItem="string"
+                        TItemValue="string"
+                        DataSource="statusCodes"
+                        DefaultValue="null"
+                        Placeholder="Статус код"
+                        @bind-Value="@Filter.StatusCode">
+                </Select>
+            </FormItem>
+            <FormItem>
+                <EnumSelect DefaultValue="null" TEnum="TypeRequest?" @bind-Value=Filter.TypeRequest Placeholder="Тип запроса" />
+            </FormItem>
+        </GridCol>
+        <GridCol Span="3" Style="margin-left: 1%">
+            <FormItem>
+                <Input @bind-Value=Filter.Description Placeholder="Описание"/>
+            </FormItem>
+            <FormItem>
+                <Input @bind-Value=Filter.Path Placeholder="Путь" />
+            </FormItem>
+        </GridCol>
+        <GridCol Span="3" Style="margin-left: 1%">
+            <FormItem>
+                <Input @bind-Value=Filter.BodyRequest Placeholder="Тело запроса"/>
+            </FormItem>
+            <FormItem>
+                <Input @bind-Value=Filter.RequestResponse Placeholder="Ответ запроса" />
+            </FormItem>
+        </GridCol>
+        <GridCol Style="margin-left: 1%">
+            <FormItem>
+                <Button HtmlType="submit" Type="@ButtonType.Primary" Icon="@IconType.Outline.Search" Shape="@ButtonShape.Circle" Size="middle"></Button>
+            </FormItem>
+        </GridCol>
+        <GridCol Style="margin-left: 1%">
+            <FormItem>
+                <Button Type="@ButtonType.Primary" Danger Icon="@IconType.Outline.Delete" OnClick="ClearFilter" Size="middle"></Button>
+            </FormItem>
+        </GridCol>
+    </Row>
+</Form>
+
+
+@code {
+    [Parameter] public LogFilter? Filter { get; set; }
+    [Parameter] public EventCallback OnEditFiltering{ get; set; }
+    private string beginDatePlaceholder = "Начало периода";
+    private string endDatePlaceholder = "Конец периода";
+
+    private List<string> statusCodes = new List<string>
+    {
+                    "Ok", "Invalid", "NotFound", "Error"
+    };
+
+    private async Task OnFinish(EditContext context)
+    {
+        var model = context.Model as LogFilter;
+        await OnEditFiltering.InvokeAsync();
+    }
+    private async Task ClearFilter()
+    {
+        Filter.Module = null;
+        Filter.LogLevel = null;
+        Filter.BeginPeriod = null;
+        Filter.EndPeriod = null;
+        Filter.StatusCode = null;
+        Filter.TypeRequest = null;
+        Filter.RequestResponse = null;
+        Filter.BodyRequest = null;
+        Filter.Description = null;
+        await OnEditFiltering.InvokeAsync();
+    }
+}

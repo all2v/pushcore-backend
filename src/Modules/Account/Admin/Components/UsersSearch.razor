@@ -1,0 +1,81 @@
+﻿@using Astrum.Logging.Entities
+@using Microsoft.Extensions.Logging
+@using Astrum.Account.Application.ViewModels
+@inject IPositionsService _positionsService
+
+<Form Model="Filter" OnFinish="OnFinish">
+    <Row Align="middle" Justify="start">
+        <GridCol Span="3">
+            <FormItem>
+                <Input @bind-Value=Filter.Login Placeholder="Логин" />
+            </FormItem>
+        </GridCol>
+        <GridCol Style="margin-left: 1%">
+            <FormItem>
+                <Input @bind-Value=Filter.Name Placeholder="Имя" />
+            </FormItem>
+        </GridCol>
+        <GridCol Span="3" Style="margin-left: 1%">
+            <FormItem>
+                <Input @bind-Value=Filter.Email Placeholder="Почта" />
+            </FormItem>
+        </GridCol>
+        <GridCol Span="3" Style="margin-left: 1%">
+            <FormItem>
+                <EnumSelect AllowClear DefaultValue="null" TEnum="RolesEnum?" @bind-Value=Filter.Role Placeholder="Роль">
+                </EnumSelect>
+            </FormItem>
+        </GridCol>
+        <GridCol Span="3" Style="margin-left: 1%">
+            <FormItem>
+                <Select DataSource="@PositionForms"
+                        @bind-Value="@Filter.PositionId"
+                        EnableSearch
+                        ValueName="@nameof(PositionForm.Id)"
+                        LabelName="@nameof(PositionForm.Name)"
+                        TItemValue="Guid?"
+                        TItem="PositionForm"
+                        Placeholder="Должность"
+                        ShowArrowIcon="false"
+                        AllowClear>
+                </Select>
+            </FormItem>
+        </GridCol>
+        <GridCol Style="margin-left: 1%">
+            <div title="применить фильтры">
+                <FormItem>
+                    <Button HtmlType="submit" Type="@ButtonType.Primary" Icon="@IconType.Outline.Search" Shape="@ButtonShape.Circle" Size="middle"></Button>
+                </FormItem>
+            </div>
+        </GridCol>
+        <GridCol Style="margin-left: 1%">
+            <div title="очистить фильтры">
+                <FormItem>
+                    <Button Type="@ButtonType.Primary" Danger Icon="@IconType.Outline.Delete" OnClick="ClearFilter" Size="middle"></Button>
+                </FormItem>
+            </div>
+        </GridCol>
+    </Row>
+</Form>
+
+@code {
+    [Parameter] public UsersFilter? Filter { get; set; }
+    [Parameter] public EventCallback OnEditFiltering { get; set; }
+    [Parameter] public List<PositionForm> PositionForms { get; set; } = new();
+
+    private async Task OnFinish(EditContext context)
+    {
+        var model = context.Model as UsersFilter;
+        await OnEditFiltering.InvokeAsync();
+    }
+
+    private async Task ClearFilter()
+    {
+        Filter.Name = null;
+        Filter.Login = null;
+        Filter.Email = null;
+        Filter.PositionId = null;
+        Filter.Role = null;
+        await OnEditFiltering.InvokeAsync();
+    }
+}

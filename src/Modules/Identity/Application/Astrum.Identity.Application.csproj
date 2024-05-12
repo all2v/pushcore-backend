@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+		<TargetFramework>net7.0</TargetFramework> 
+		<TargetFrameworkVersion>7.0</TargetFrameworkVersion>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\SharedLib\Common\Astrum.SharedLib.Common.csproj" />
+        <ProjectReference Include="..\..\..\SharedLib\Application\Astrum.SharedLib.Application.csproj" />
+        <ProjectReference Include="..\..\..\SharedLib\Domain\Astrum.SharedLib.Domain.csproj" />
+        <ProjectReference Include="..\..\IdentityServer\Domain\Astrum.IdentityServer.Domain.csproj" />
+        <ProjectReference Include="..\Domain\Astrum.Identity.Domain.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Folder Include="Features" />
+    </ItemGroup>
+
+</Project>

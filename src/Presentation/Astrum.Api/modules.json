@@ -1,0 +1,82 @@
+[
+  {
+    "id": "Astrum.Identity",
+    "isBundledWithHost": false,
+    "version": "1.0.0"
+  },
+  {
+    "id": "Astrum.IdentityServer",
+    "isBundledWithHost": false,
+    "version": "1.0.0"
+  },
+  {
+    "id": "Astrum.Account",
+    "isBundledWithHost": false,
+    "version": "1.0.0"
+  },
+  {
+    "id": "Astrum.Ordering",
+    "isBundledWithHost": false,
+    "version": "1.0.0"
+  },
+  {
+    "id": "Astrum.Calendar",
+    "isBundledWithHost": false,
+    "version": "1.0.0"
+  },
+  {
+    "id": "Astrum.Appeal",
+    "isBundledWithHost": false,
+    "version": "1.0.0"
+  },
+  {
+    "id": "Astrum.Market",
+    "isBundledWithHost": false,
+    "version": "1.0.0"
+  },
+  {
+    "id": "Astrum.Project",
+    "isBundledWithHost": false,
+    "version": "1.0.0"
+  },
+  {
+    "id": "Astrum.Articles",
+    "isBundledWithHost": false,
+    "version": "1.0.0"
+  },
+  {
+    "id": "Astrum.News",
+    "isBundledWithHost": false,
+    "version": "1.0.0"
+  },
+  {
+    "id": "Astrum.Storage",
+    "isBundledWithHost": false,
+    "version": "1.0.0"
+  },
+  {
+    "id": "Astrum.SampleData",
+    "isBundledWithHost": false,
+    "version": "1.0.0"
+  },
+  {
+    "id": "Astrum.Logging",
+    "isBundledWithHost": false,
+    "version": "1.0.0"
+  },
+  {
+    "id": "Astrum.Inventory",
+    "isBundledWithHost": false,
+    "version": "1.0.0"
+  },
+  {
+    "id": "Astrum.Infrastructure.Integrations.Youtrack",
+    "isBundledWithHost": false,
+    "version": "1.0.0"
+  },
+  {
+    "id": "Astrum.Telegram",
+    "isBundledWithHost": false,
+    "version": "1.0.0"
+  }
+]

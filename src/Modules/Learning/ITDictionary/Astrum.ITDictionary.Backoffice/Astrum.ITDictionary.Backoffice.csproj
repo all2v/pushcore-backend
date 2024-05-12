@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net7.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <Folder Include="GraphQL\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\..\..\Infrastructure\Astrum.Infrastructure.Shared\Astrum.Infrastructure.Shared.csproj" />
+      <ProjectReference Include="..\..\..\..\SharedLib\Application\Astrum.SharedLib.Application.csproj" />
+      <ProjectReference Include="..\..\..\..\SharedLib\Common\Astrum.SharedLib.Common.csproj" />
+      <ProjectReference Include="..\..\..\..\SharedLib\Domain\Astrum.SharedLib.Domain.csproj" />
+      <ProjectReference Include="..\..\..\..\SharedLib\Persistence\Astrum.SharedLib.Persistence.csproj" />
+      <ProjectReference Include="..\..\..\Logging\Core\Astrum.Logging.csproj" />
+      <ProjectReference Include="..\Astrum.ITDictionary.Application\Astrum.ITDictionary.Application.csproj" />
+    </ItemGroup>
+
+</Project>

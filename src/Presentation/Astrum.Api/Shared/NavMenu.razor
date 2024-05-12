@@ -1,0 +1,159 @@
+﻿<div class="logo-wrapper">
+    <a href="">
+        <img class="logo-image" src="/adminStatic/logo.svg" />
+    </a>
+</div>
+
+<div class="sidebar container">
+    <div class="container2">
+        <nav>
+            <div class="nav-item px-3">
+                <NavLink @onclick="() => ToggleNavMenu(NavSubmenu.Users)" class="nav-link" Match="NavLinkMatch.All">
+                    <span class="oi" aria-hidden="true">Пользователи</span>
+                </NavLink>
+            </div>
+            @if (subMenus.Contains(NavSubmenu.Users))
+            {
+                <div class="nav-item px-4">
+                    <NavLink href="/admin/users" class="nav-link" Match="NavLinkMatch.All">
+                        <span class="oi" aria-hidden="true">Список пользователей</span>
+                    </NavLink>
+                </div>
+                <div class="nav-item px-4">
+                    <NavLink href="/admin/transactions" class="nav-link" Match="NavLinkMatch.All">
+                        <span class="oi" aria-hidden="true">Транзакции</span>
+                    </NavLink>
+                </div>
+                <div class="nav-item px-4">
+                    <NavLink href="/admin/registration" class="nav-link" Match="NavLinkMatch.All">
+                        <span class="oi" aria-hidden="true">Заявки на регистрацию</span>
+                    </NavLink>
+                </div>
+                <div class="nav-item px-4">
+                    <NavLink href="/admin/position" class="nav-link" Match="NavLinkMatch.All">
+                        <span class="oi" aria-hidden="true">Должности</span>
+                    </NavLink>
+                </div>
+                <div class="nav-item px-4">
+                    <NavLink href="/admin/achievements" class="nav-link" Match="NavLinkMatch.All">
+                        <span class="oi" aria-hidden="true">Достижения</span>
+                    </NavLink>
+                </div>
+            }
+            <div class="nav-item px-3">
+                <NavLink @onclick="() => ToggleNavMenu(NavSubmenu.Categories)" class="nav-link" Match="NavLinkMatch.All">
+                    <span class="oi" aria-hidden="true">Категории</span>
+                </NavLink>
+            </div>
+            @if (subMenus.Contains(NavSubmenu.Categories))
+            {
+                <div class="nav-item px-4">
+                    <NavLink href="/admin/category" class="nav-link" Match="NavLinkMatch.All">
+                        <span class="oi" aria-hidden="true">Статьи</span>
+                    </NavLink>
+                </div>
+                <div class="nav-item px-4">
+                    <NavLink href="/admin/appealCategory" class="nav-link" Match="NavLinkMatch.All">
+                        <span class="oi" aria-hidden="true">Заявки</span>
+                    </NavLink>
+                </div>
+            }
+            <div class="nav-item px-3">
+                <NavLink @onclick="() => ToggleNavMenu(NavSubmenu.News)" class="nav-link" Match="NavLinkMatch.All">
+                    <span class="oi" aria-hidden="true">Новости</span>
+                </NavLink>
+            </div>
+            @if (subMenus.Contains(NavSubmenu.News))
+            {
+                <div class="nav-item px-4">
+                    <NavLink href="/admin/banner" class="nav-link" Match="NavLinkMatch.All">
+                        <span class="oi" aria-hidden="true">Баннер</span>
+                    </NavLink>
+                </div>
+                <div class="nav-item px-4">
+                    <NavLink href="/admin/widget" class="nav-link" Match="NavLinkMatch.All">
+                        <span class="oi" aria-hidden="true">Виджет</span>
+                    </NavLink>
+                </div>
+            }
+            <div class="nav-item px-3">
+                <NavLink href="/admin/inventory" class="nav-link" Match="NavLinkMatch.All">
+                    <span class="oi" aria-hidden="true">Инвентарь</span>
+                </NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink href="/admin/market" class="nav-link" Match="NavLinkMatch.All">
+                    <span class="oi" aria-hidden="true">Магазин</span>
+                </NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink href="/admin/customers" class="nav-link" Match="NavLinkMatch.All">
+                    <span class="oi" aria-hidden="true">Заказчики</span>
+                </NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink href="/admin/logs" class="nav-link" Match="NavLinkMatch.All">
+                    <span class="oi" aria-hidden="true">Логи</span>
+                </NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink href="/admin/tracker" class="nav-link" Match="NavLinkMatch.All">
+                    <span class="oi" aria-hidden="true">Трекер Задач</span>
+                </NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink href="" class="nav-link" Match="NavLinkMatch.All">
+                    <span class="oi" aria-hidden="true">Выйти</span>
+                </NavLink>
+            </div>
+        </nav>
+    </div>
+    @*<div class="sidebar-list-item">
+            <NavLink href="/admin/telegram-integration" Match="NavLinkMatch.All">
+                <span style="color: #2c323f" aria-hidden="true">Интеграция Telegram</span>
+            </NavLink>
+        </div>
+    </nav>
+    @*<div class="sidebar-list-item">
+        <NavLink href="/admin/sample-data" Match="NavLinkMatch.All">
+            <span style="color: #2c323f" aria-hidden="true">ДБ</span>
+        </NavLink>
+    </div>*@
+    
+</div>
+
+<style>
+    .container {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+    }
+
+    .container2 {
+        width: 100%;
+        height: 90%;
+        overflow-y: scroll;
+        padding-right: 50px; /* Increase/decrease this value for cross-browser compatibility */
+        box-sizing: content-box; /* So the width will be 100% + 17px */
+    }
+</style>
+
+@code
+{
+    private enum NavSubmenu
+    {
+        Users,
+        Categories,
+        News
+    }
+
+    private List<NavSubmenu> subMenus = new List<NavSubmenu>();
+
+    private void ToggleNavMenu(NavSubmenu number)
+    {
+        if (subMenus.Contains(number))
+            subMenus.Remove(number);
+        else
+            subMenus.Add(number);
+    }
+}

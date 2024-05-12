@@ -1,0 +1,16 @@
+﻿@inject ITemplatesService _service
+
+<PageTitle>Инвентарь</PageTitle>
+
+<h3>Категории товаров</h3>
+<CreateTemplate OnTemplateCreated="OnInitializedAsync"></CreateTemplate>
+<TemplatesTable OnTemplateChange="OnInitializedAsync" Templates="Templates"></TemplatesTable>
+
+@code {
+    public List<TemplateView> Templates = new List<TemplateView>();
+
+    protected async override Task OnInitializedAsync()
+    {
+        Templates = await _service.GetTemplates();
+    }
+}

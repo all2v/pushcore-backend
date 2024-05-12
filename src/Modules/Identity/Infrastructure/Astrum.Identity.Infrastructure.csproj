@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+		<TargetFramework>net7.0</TargetFramework> 
+		<TargetFrameworkVersion>7.0</TargetFrameworkVersion>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\SharedLib\Common\Astrum.SharedLib.Common.csproj" />
+        <ProjectReference Include="..\..\..\Infrastructure\Astrum.Infrastructure.Resources\Astrum.Infrastructure.Resources.csproj" />
+        <ProjectReference Include="..\..\..\Infrastructure\Astrum.Infrastructure\Astrum.Infrastructure.csproj" />
+        <ProjectReference Include="..\..\..\SharedLib\Persistence\Astrum.SharedLib.Persistence.csproj" />
+        <ProjectReference Include="..\Application\Astrum.Identity.Application.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="AutoMapper.Extensions.ExpressionMapping" Version="6.0.1" />
+        <PackageReference Include="Duende.IdentityServer" Version="6.2.0" />
+        <PackageReference Include="Duende.IdentityServer.AspNetIdentity" Version="6.2.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="7.0.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="7.0.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="7.0.0" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Identity.Core" Version="7.0.0" />
+        <PackageReference Include="System.Linq.Dynamic.Core" Version="1.2.23" />
+    </ItemGroup>
+
+</Project>

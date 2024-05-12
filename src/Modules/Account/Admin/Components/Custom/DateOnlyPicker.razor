@@ -1,0 +1,19 @@
+﻿
+<DatePicker Picker="@DatePickerType.Date" @bind-Value="@DateTimeModel" OnChange="@(async (a) => await SetDate(a))" Format="dd.MM.yyyy" />
+
+@code {
+    DateTime? DateTimeModel { get; set; }
+    [Parameter] public EventCallback<DateOnly?> DateSetted { get; set; }
+    [Parameter] public DateOnly? Date { get; set; }
+
+    async Task SetDate(DateTimeChangedEventArgs a)
+    {
+        DateOnly? dateOnly = a.Date.HasValue ? DateOnly.FromDateTime(a.Date.Value) : null;
+        await DateSetted.InvokeAsync(dateOnly);
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        DateTimeModel = Date.HasValue ? Date.Value.ToDateTime(TimeOnly.MinValue) : null;
+    }
+}

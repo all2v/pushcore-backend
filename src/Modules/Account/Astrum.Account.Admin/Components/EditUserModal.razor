@@ -1,0 +1,48 @@
+﻿@inject IApplicationUserService _userService
+
+<Modal Visible="_visible" OnCancel="@HandleCancel" Footer="null">
+    <h3 class="text-center">Редактирование пользователя</h3>
+    <Form Model="User" OnFinish="OnFinish">
+        <Text>Пользователь: @User.Username (@User.Surname @User.Name)</Text>
+        <FormItem Style="margin: 20px 0;">
+            <Select Mode="multiple"
+                DefaultValues="UserRoles"
+                @bind-Values="SelectedRoles"
+                DataSource="Enum.GetValues<RolesEnum>().Select(role => role.ToString())"
+                Placeholder="Роли"
+                TItem="string"
+                TItemValue="string"/>
+        </FormItem>
+        <FormItem>
+            <Button Type="@ButtonType.Primary" HtmlType="submit">
+                Редактировать
+            </Button>
+        </FormItem>
+    </Form>
+</Modal>
+
+@code {
+    public bool _visible;
+    public UserProfileSummary User;
+    public IEnumerable<string> SelectedRoles;
+    public IEnumerable<string> UserRoles;
+
+    public void ShowModal(UserProfileSummary user)
+    {
+        _visible = true;
+        User = user;
+        UserRoles = User.Roles?.Select(role => role.Role.Name).ToList() ?? new List<string>();
+        SelectedRoles = UserRoles;
+        StateHasChanged();
+    }
+
+    private void HandleCancel()
+    {
+        _visible = false;
+    }
+
+    private async Task OnFinish(EditContext context)
+    {
+        await _userService.UpdateRoles(User.Username, SelectedRoles.ToList());
+    }
+}

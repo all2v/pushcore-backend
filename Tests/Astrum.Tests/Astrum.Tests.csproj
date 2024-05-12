@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net7.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="FakeItEasy" Version="7.3.1" />
+        <PackageReference Include="FluentAssertions" Version="6.8.0" />
+        <PackageReference Include="Moq" Version="4.18.2" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\Infrastructure\Astrum.Infrastructure.Persistence\Astrum.Infrastructure.Persistence.csproj" />
+        <ProjectReference Include="..\..\src\Modules\Application\Persistence\Astrum.Application.Persistence.csproj" />
+        <ProjectReference Include="..\..\src\Modules\Identity\Application\Astrum.Identity.Application.csproj" />
+        <ProjectReference Include="..\..\src\Modules\Identity\Persistence\Astrum.Identity.Persistence.csproj" />
+        <ProjectReference Include="..\..\src\Modules\Ordering\Persistence\Astrum.Ordering.Persistence.csproj" />
+        <ProjectReference Include="..\..\src\Modules\Telegram\Application\Astrum.Telegram.Application.csproj" />
+        <ProjectReference Include="..\..\src\Modules\Telegram\Persistence\Astrum.Telegram.Persistence.csproj" />
+    </ItemGroup>
+
+</Project>

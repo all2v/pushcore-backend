@@ -1,0 +1,51 @@
+﻿@inject IWidgetService _widgetService
+@inject ILogAdminService _logger
+
+<div style="display:flex; flex-wrap: wrap; width:100%; grid-gap:24px; height:100%;">
+    @foreach (var widget in Widgets)
+    {
+        <div style="width: 300px; height: 330px;">
+            <div style="width: 100%; height: 90%; margin-bottom:15px; cursor:pointer; position: relative">
+                <Popconfirm Title="Удалить виджет?" OnConfirm="async () => await DeleteWidget(widget.Id)" OkText="Да" CancelText="Нет">
+                    <Button Type="@ButtonType.Primary"
+                    Danger
+                    Icon="@IconType.Outline.Delete"
+                    Size="middle"
+                    style="position: absolute; left: 85%; top:11%"/>
+                </Popconfirm>
+                <img onclick="@(() => ToggleWidget(widget))" class="@(widget.IsActive ? "activeWidget" : "")" style="width:100%; height:100%;
+                    border-radius:10px; object-fit: cover;" src="@widget.PictureS3Link">
+            </div>
+            <b style="font-size:24px; margin-top:10px; margin-bottom:15px; margin-left:5px;">@widget.Title</b>
+        </div>
+    }
+</div>
+
+<style>
+    .activeWidget {
+        border: solid;
+        border-color: blueviolet;
+    }
+</style>
+
+@code {
+    [Parameter] public List<WidgetForm> Widgets { get; set; }
+    [Parameter] public EventCallback OnWidgetChanged { get; set; }
+
+    public async Task ToggleWidget(WidgetForm widget)
+    {
+        widget.IsActive = !widget.IsActive;
+        await _widgetService.UpdateWidget(widget.Id, widget);
+        await OnWidgetChanged.InvokeAsync();
+        StateHasChanged();
+    }
+
+    public async Task DeleteWidget(Guid id)
+    {
+        var result = await _widgetService.DeleteWidget(id);
+        _logger.Log(id, result, "Виджет удалён.", Logging.Entities.ModuleAstrum.News);
+        Widgets.Remove(Widgets.FirstOrDefault(widget => widget.Id == id));
+        await OnWidgetChanged.InvokeAsync();
+        StateHasChanged();
+    }
+}

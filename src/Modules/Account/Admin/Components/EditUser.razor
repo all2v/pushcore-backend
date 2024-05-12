@@ -1,0 +1,171 @@
+﻿@using Astrum.Account.Features.Account.UserEdit.Commands;
+@using Astrum.Account.ViewModels;
+@using Astrum.IdentityServer.DomainServices.Features.Commands
+@using Astrum.IdentityServer.DomainServices.Services
+@using Astrum.SharedLib.Common.Results;
+@using AutoMapper;
+@using Astrum.Account.Admin.Components.Custom;
+@inject IPositionsService _positionService
+@inject IMediator _mediator
+@inject IMapper _mapper
+@inject ILogAdminService _logger
+
+<Button OnClick="@(async () => await ShowModal())">Редактировать</Button>
+
+<Modal 
+    Visible="_visible" 
+    OnCancel="@HandleCancel" 
+    OnOk="@(async () => await OnFinish())"
+    AfterClose="async () => {
+        if (OnUserEdited.HasDelegate)
+        {
+            await OnUserEdited.InvokeAsync();
+        }
+    }">
+    <h3 class="text-center" style="margin-bottom: 20px;">Редактирование пользователя</h3>
+    <Form Model="User" OnFinish="OnFinish" LabelColSpan="6">
+        <FormItem Label="Фамилия">
+            <Input @bind-Value="@Model.LastName" />
+        </FormItem>
+        <FormItem Label="Имя">
+            <Input @bind-Value="@Model.FirstName" />
+        </FormItem>
+        <FormItem Label="Отчество">
+            <Input @bind-Value="@Model.Patronymic" />
+        </FormItem>
+        <FormItem Label="Юзернейм">
+            <Input @bind-Value="@Model.Username"/>
+            @if (UsernameWhiteSpaces)
+            {
+                <p style="color: #ff4d4f">Username не может содержать пробелов</p>
+            }
+        </FormItem>
+        <FormItem Label="Роли">
+            @*<Select Mode="multiple"
+                    Placeholder="Выберите роли пользователя"
+                    DataSource="@context._typeItems"
+                    @bind-Values="@context.PositionTypes"
+                    LabelName="@nameof(PositionTypeForm.Name)"
+                    HideSelected
+                    TItemValue="PositionTypeForm"
+                    TItem="PositionTypeForm"
+                    OnFocus="@(async () => await FindAllTypes(context))"
+                    OnSearch="@(async (value) => await QuickTypeSearch(value, context))"
+                    EnableSearch
+                    SearchDebounceMilliseconds="500">
+            </Select>*@
+            <EnumSelect TEnum="RolesEnum" Mode="multiple" @bind-Values=@Model.Roles/>
+        </FormItem>
+        <FormItem Label="Должность">
+            <Select DataSource="@PositionForms"
+                    @bind-Value="@Model.PositionId"
+                    EnableSearch
+                    ValueName="@nameof(PositionForm.Id)"
+                    LabelName="@nameof(PositionForm.Name)"
+                    TItemValue="Guid?"
+                    TItem="PositionForm"
+                    Placeholder="Поиск по должности"
+                    ShowArrowIcon="false"
+                    OnFocus="@(async () => await FindAllPositions())"
+                    OnSearch="@(async (value) => await FindPositions(value))"
+                    AllowClear
+                    SearchDebounceMilliseconds="500">
+            </Select>
+        </FormItem>
+        <FormItem Label="Почта">
+            <Input @bind-Value="@Model.Email" />
+        </FormItem>
+        <FormItem Label="Адрес">
+            <Input @bind-Value="@Model.Address" />
+        </FormItem>
+        <FormItem Label="Номер телефона">
+            <Input @bind-Value="@Model.PrimaryPhone" />
+        </FormItem>
+        <FormItem Label="Запасной номер">
+            <Input AutoComplete="@false" @bind-Value="@Model.SecondaryPhone" />
+        </FormItem>
+        @*<FormItem Label="Дата рождения">
+            <DateOnlyPicker Date="@(Model.BirthDate)"
+                DateSetted="@(async (date) => await Task.Run(() => Model.BirthDate = date))"></DateOnlyPicker>
+        </FormItem>*@
+        @* <FormItem Label="Пароль"> *@
+        @*     <Input AutoComplete="@false" Type="password" @bind-Value="@Model.Password" /> *@
+        @* </FormItem> *@
+        <FormItem Label="Активен">
+            <Checkbox @bind-Value="@Model.IsActive" />
+        </FormItem>
+    </Form>
+</Modal>
+
+@code {
+    [Parameter] public UserProfileSummary User { get; set; }
+    [Parameter] public EventCallback OnUserEdited { get; set; }
+    UserEditCommand Model = new();
+    List<PositionForm> PositionForms { get; set; } = new();
+    Task<Result<List<PositionForm>>> _PositionTask;
+    bool _visible;
+    bool UsernameWhiteSpaces;
+
+    async Task ShowModal()
+    {
+        await FindAllPositions();
+        Model = _mapper.Map<UserEditCommand>(User);
+        //Model = new UserEditCommand
+        //{
+        //    Address = User.Address,
+        //    BirthDate = User.BirthDate.HasValue ? DateOnly.FromDateTime(User.BirthDate.Value) : null,
+        //    Email = User.Email,
+        //    FirstName = User.Name,
+        //    Id = User.UserId,
+        //    IsActive = User.IsActive,
+        //    LastName = User.Surname,
+        //    Patronymic = User.Patronymic,
+        //    PrimaryPhone = User.PrimaryPhone,
+        //    SecondaryPhone = User.SecondaryPhone,
+        //    Username = User.Username
+        //};
+        _visible = true;
+    }
+
+    void HandleCancel()
+    {
+        _visible = false;
+    }
+
+    async Task OnFinish()
+    {
+        if (Model.Username.IndexOf(" ") >= 1)
+        {
+            UsernameWhiteSpaces = true;
+            return;
+        }
+        var result = await _mediator.Send(Model);
+        _logger.Log(Model, result, "Изменён пользователь.", Logging.Entities.ModuleAstrum.Account);
+        
+        //TODO: Show result somewhere
+        _visible = false;
+    }
+
+    private async Task FindPositions(string value)
+    {
+        if (string.IsNullOrEmpty(value) || !string.IsNullOrEmpty(value.Trim()))
+        {
+            if (_PositionTask == null || _PositionTask.IsCompleted)
+            {
+                _PositionTask = _positionService.GetPositionsByName(value.Trim());
+                PositionForms = await _PositionTask;
+            }
+        }
+        StateHasChanged();
+    }
+
+    private async Task FindAllPositions()
+    {
+        if (_PositionTask == null || _PositionTask.IsCompleted)
+        {
+            _PositionTask = _positionService.GetPositions();
+            PositionForms = await _PositionTask;
+        }
+        StateHasChanged();
+    }
+}

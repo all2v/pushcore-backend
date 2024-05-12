@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\SharedLib\Common\Astrum.SharedLib.Common.csproj" />
+    <ProjectReference Include="..\..\Account\Application\Astrum.Account.Application.csproj" />
+    <ProjectReference Include="..\Astrum.Debts.DomainServices\Astrum.Debts.DomainServices.csproj" />
+    <ProjectReference Include="..\Astrum.Debts.Domain\Astrum.Debts.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

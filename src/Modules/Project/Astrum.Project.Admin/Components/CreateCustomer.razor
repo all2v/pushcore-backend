@@ -1,0 +1,72 @@
+﻿@using Astrum.Logging.Services
+@using Astrum.Projects.Services
+@using Astrum.Projects.ViewModels.Requests
+@using Astrum.Projects.ViewModels.Views
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Forms
+@inject ICustomerService _customerService;
+@inject ILogAdminService _logger;
+
+<Button Style="margin-bottom: 20px;" Type="Primary" OnClick="ShowModal">Добавить заказчика</Button>
+
+<Modal Visible="_visible" OnCancel="@HandleCancel" Footer="null">
+    <h3 class="text-center">Добавление заказчика</h3>
+    <Form Model="Customer" OnFinish="OnFinish">
+        <FormItem Style="margin-top: 30px;">
+            <Input OnInput="@((ChangeEventArgs name) => OnChange(name))" Placeholder="Название заказчика" @bind-Value="@Customer.Name"></Input>
+        </FormItem>
+        <FormItem>
+            <Button Type="@ButtonType.Primary" HtmlType="submit" Disabled="@_createButtonDisabled">
+                Создать
+            </Button>
+        </FormItem>
+        @if (CustomerAlreadyExists)
+        {
+            <p style="color: #ff4d4f">Такой заказчик уже существует!</p>
+        }
+    </Form>
+</Modal>
+
+@code {
+    [Parameter] public EventCallback OnCustomerCreated { get; set; }
+    public bool CustomerAlreadyExists;
+    public bool _visible;
+    public bool _createButtonDisabled;
+    public CustomerView Customer = new CustomerView();
+
+    private void ShowModal()
+    {
+        _visible = true;
+        _createButtonDisabled = true;
+        CustomerAlreadyExists = false;
+        Customer = new CustomerView();
+    }
+
+    private void HandleCancel()
+    {
+        _visible = false;
+    }
+
+    private async Task OnFinish(EditContext context)
+    {
+        var model = context.Model as CustomerView;
+        if (!String.IsNullOrWhiteSpace(model?.Name))
+        {
+            if (await _customerService.Exist(model.Name))
+            {
+                CustomerAlreadyExists = true;
+                return;
+            }
+            var request = new CustomerRequest() {Name = model.Name};
+            var result = await _customerService.Create(request);
+            _logger.Log(model, result, "Создан заказчик.", Logging.Entities.ModuleAstrum.Appeal);
+            await OnCustomerCreated.InvokeAsync();
+            _visible = false;
+        }
+    }
+
+    private void OnChange(ChangeEventArgs name)
+    {
+        _createButtonDisabled = String.IsNullOrWhiteSpace(name.Value.ToString());
+    }
+}

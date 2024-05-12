@@ -1,0 +1,123 @@
+﻿@using System.ComponentModel.DataAnnotations;
+@using System.Security.Claims
+@using Astrum.Account.Application.Services
+@using Astrum.Market.Application.ViewModels
+@using Astrum.Market.Domain.Enums
+@using Microsoft.AspNetCore.Components.Authorization
+@inject IUserProfileService _profileService
+@inject ITransactionService _transactionService
+@inject ILogAdminService _logger
+@inject AuthenticationStateProvider _authenticationStateProvider
+
+<Button OnClick="ShowModal">@Type</Button>
+
+<Modal Visible="_visible" OnCancel="@HandleCancel" Footer="null">
+    <h3 class="text-center">@Type</h3>
+    <Form LabelColSpan="8" Model="Model" OnFinish="OnFinish">
+        <FormItem Label="Пользователь" Style="margin: 20px 0;">
+            <Select
+                SortByLabel="SortDirection.Ascending"
+                LabelName="@nameof(UserProfileSummary.NameWithSurname)"
+                @bind-Value="@Model.User"
+                DataSource="Users"
+                EnableSearch />
+        </FormItem>
+        <FormItem Label="Количество" Style="margin: 20px 0;">
+            <AntDesign.InputNumber Min="0"  @bind-Value="@context.MoneyChange" DefaultValue="0" />
+        </FormItem>
+        @if (ValidationError)
+        {
+            <p style="color: #ff4d4f">@ValidationMessage</p>
+        }
+        @if (NotEnoughMoney)
+        {
+            <p style="color: #ff4d4f">@NotEnoughMoneyMessage</p>
+        }
+        <FormItem>
+            <Button Disabled="_buttonDisabled" Type="@ButtonType.Primary" HtmlType="submit">
+                Применить
+            </Button>
+        </FormItem>
+    </Form>
+</Modal>
+
+@code {
+    public bool _visible;
+    public ChangeMoneyForm Model = new();
+    public const string NotEnoughMoneyMessage = "У пользователя недостаточно средств!";
+    public const string ValidationMessage = "Заполните обязательные поля!";
+    public bool ValidationError;
+    public bool NotEnoughMoney;
+    [Parameter] public List<UserProfileSummary> Users { get; set; }
+    [Parameter] public EventCallback<ChangeMoneyForm> OnBalanceChanged { get; set; }
+    [Parameter] public string Type { get; set; }
+    public bool _buttonDisabled =>
+    Model.User == null || Model.MoneyChange == null;
+
+    private Guid ownerId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authstate = await _authenticationStateProvider.GetAuthenticationStateAsync();
+        var id = authstate.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+        ownerId = new Guid(id);
+    }
+
+    public void ShowModal()
+    {
+        Model = new();
+        ValidationError = false;
+        NotEnoughMoney = false;
+        _visible = true;
+    }
+
+    private void HandleCancel()
+    {
+        _visible = false;
+    }
+
+    private async Task OnFinish()
+    {
+        if (ValidateForm(Model))
+        {
+            var change = Model.MoneyChange;
+            var user = Model.User;
+            if (Type == "Начисление валюты")
+            {
+                var description = $"Пользователю {user.NameWithSurname} начислено {change} валюта";
+                var request = new TransactionRequest(change.Value, user.UserId, 
+                    TransactionType.Accrual, description, ownerId);
+                var result = await _transactionService.AddTransaction(request);
+                _logger.Log($"{user.UserId}, {change.Value}", result, 
+                    $"Пользователю {user.Username} начислены деньги.", Logging.Entities.ModuleAstrum.Account);
+            }
+            else
+            {
+                var moneyChange = Math.Abs(change.Value);
+                var description = $"У пользователя {user.NameWithSurname} списали {change} валюты";
+                var request = new TransactionRequest(-moneyChange, user.UserId,
+                    TransactionType.WriteOff, description, ownerId);
+                var result = await _transactionService.AddTransaction(request);
+                _logger.Log($"{user.UserId}, {change.Value}", result, 
+                    $"Вычтены деньги у пользователя {user.Username}.", Logging.Entities.ModuleAstrum.Account);
+            }
+            await OnBalanceChanged.InvokeAsync(Model);
+            _visible = false;
+        }
+    }
+
+    public bool ValidateForm(ChangeMoneyForm model)
+    {
+        if (model.User == null || Model.MoneyChange == null)
+        {
+            ValidationError = true;
+            return false;
+        }
+        if (Model.User.Money + Model.MoneyChange < 0)
+        {
+            NotEnoughMoney = true;
+            return false;
+        }
+        return true;
+    }
+}

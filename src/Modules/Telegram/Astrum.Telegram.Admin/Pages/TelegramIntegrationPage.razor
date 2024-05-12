@@ -1,0 +1,47 @@
+﻿@page "/admin/telegram-integration"
+@using Astrum.Identity.Managers;
+@using Astrum.Identity.Models;
+@using System.Security.Claims;
+@using Astrum.Telegram.Application.ViewModels;
+@using Astrum.Telegram.Services;
+@using Astrum.Telegram.Admin.Components
+@inject ApplicationUserManager userManager
+@inject AuthenticationStateProvider authStateProvider
+@inject ITelegramChatService _telegramChatService;
+
+<div style="margin: 15px 0; font-size: large;">
+    <h3>Инструкция по добавлению бота в чат компании</h3>
+    Чтобы добавить уведомления в Telegram для вашей компании, выполните несколько простых шагов:<br />
+    1. Перейдите по <a href="https://t.me/@BotName?startgroup=@SubscribeToken">этой ссылке</a>;<br />
+    2. Добавьте бота в группу вашей компании
+</div>
+
+<PageTitle>Интеграция с Telegram</PageTitle>
+
+<h3>Чаты</h3>
+<ChatsList TelegramChats="Chats"></ChatsList>
+
+@code {
+    public List<ChatForm> Chats = new List<ChatForm>();
+    private string BotName { get; set; } = "PushCorebot";
+    private string SubscribeToken { get; set; }
+
+    protected async override Task OnInitializedAsync()
+    {
+        var user = await GetUser();
+        if (user == null)
+            throw new Exception("User not found!");
+        var companyToken = await userManager.GenerateUserTokenAsync(user, "TelegramIntegration", "chatSubscripition");
+        SubscribeToken = user.Id.ToString() + companyToken;
+        Chats = await _telegramChatService.GetChats();
+    }
+
+    private async Task<ApplicationUser> GetUser()
+    {
+        var authState = await authStateProvider.GetAuthenticationStateAsync();
+        var id = authState.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+        if (!string.IsNullOrWhiteSpace(id))
+            return await userManager.FindByIdAsync(id);
+        return null;
+    }
+}

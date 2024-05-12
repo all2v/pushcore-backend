@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" Sdk="Microsoft.Docker.Sdk">
+    <PropertyGroup Label="Globals">
+        <ProjectVersion>2.1</ProjectVersion>
+        <DockerTargetOS>Linux</DockerTargetOS>
+        <ProjectGuid>3888bd9e-4303-4845-9b91-054088abebb3</ProjectGuid>
+        <DockerLaunchAction>LaunchBrowser</DockerLaunchAction>
+        <DockerServiceUrl>{Scheme}://localhost:{ServicePort}</DockerServiceUrl>
+        <DockerServiceName>chcleanarchitecture.app</DockerServiceName>
+    </PropertyGroup>
+    <ItemGroup>
+        <None Include="docker-compose.override.yml">
+            <DependentUpon>docker-compose.yml</DependentUpon>
+        </None>
+        <None Include="docker-compose.yml" />
+    </ItemGroup>
+    <ItemGroup>
+        <Content Include=".dockerignore" />
+        <Content Include=".gitignore" />
+        <Content Include="docker-compose.dev.yml">
+            <DependentUpon>docker-compose.yml</DependentUpon>
+        </Content>
+        <Content Include="Dockerfile" />
+        <Content Include="docs\clean-architecture.png" />
+        <Content Include="docs\DDD-CQRS-dependencies.png" />
+        <Content Include="docs\developer-guide.docs.md" />
+        <Content Include="docs\developer-notes.docs.md" />
+        <Content Include="docs\installation.docs.md" />
+        <Content Include="docs\Makefile" />
+        <Content Include="docs\SecretsManagement.txt" />
+    </ItemGroup>
+</Project>

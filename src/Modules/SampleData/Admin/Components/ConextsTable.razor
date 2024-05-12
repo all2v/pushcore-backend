@@ -1,0 +1,21 @@
+﻿@inject ISampleContentService _sampleContentService
+
+<Table DataSource=@Contexts>
+    <PropertyColumn Property="c=>c.ContextName" />
+</Table>
+@code {
+    public List<SampleContentView> Contexts = new List<SampleContentView>() { };
+    IEnumerable<string> selectedRows;
+    string selectionType = "checkbox";
+
+    protected async override Task OnInitializedAsync()
+    {
+        await BaseUpdate();
+    }
+
+    private async Task BaseUpdate()
+    {
+        var contextResult = await _sampleContentService.GetAll();
+        Contexts = contextResult.Data;
+    }
+}

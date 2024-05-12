@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+		<TargetFramework>net7.0</TargetFramework> 
+		<TargetFrameworkVersion>7.0</TargetFrameworkVersion>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="11.0.0" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="7.0.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Folder Include="Contracts" />
+        <Folder Include="EventHandlers" />
+        <Folder Include="Features" />
+        <Folder Include="Mappings" />
+        <Folder Include="ViewModels\" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Domain\Astrum.Articles.Domain.csproj" />
+        <ProjectReference Include="..\..\..\SharedLib\Application\Astrum.SharedLib.Application.csproj" />
+    </ItemGroup>
+</Project>

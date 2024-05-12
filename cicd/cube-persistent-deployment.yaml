@@ -1,0 +1,186 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: astrum-postgres
+  namespace: astrum
+spec:
+  selector:
+    matchLabels:
+      app: astrum-postgres # has to match .spec.template.metadata.labels
+  serviceName: "astrum-postgres"
+  replicas: 1 # by default is 1
+  minReadySeconds: 5 # by default is 0
+  template:
+    metadata:
+      labels:
+        app: astrum-postgres # has to match .spec.selector.matchLabels
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+        - name: astrum-postgres
+          image: postgres:15-alpine
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+            - name: astrum-postgres
+              mountPath: /var/lib/postgresql/data
+              # subPath: data
+          env:
+            - name: POSTGRES_USER
+              value: astrum-pg-user
+            - name: POSTGRES_PASSWORD
+              value: 1CypfxSQba4x6ghsKt7SCVT2bflhs4TMe0Xj9BXg
+            - name: POSTGRES_DB
+              value: astrum-db
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+      initContainers:
+        - name: astrum-rights-to-data
+          image: busybox
+          command:
+            [
+              "sh",
+              "-c",
+              "mkdir -p /var/lib/postgresql/data/pgdata && chown -R 999:999 /var/lib/postgresql/data/pgdata",
+            ]
+          securityContext:
+            runAsUser: 0
+            privileged: true
+          volumeMounts:
+            - name: astrum-postgres
+              mountPath: /var/lib/postgresql/data
+  volumeClaimTemplates:
+    - metadata:
+        name: astrum-postgres
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: "rook-ceph-block"
+        resources:
+          requests:
+            storage: 4Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: astrum-back-service
+  namespace: astrum
+  labels:
+    env: Production
+    owner: MikhailBulatov
+spec:
+  selector:
+    project: astrum-back
+  ports:
+    - name: app-listener
+      protocol: TCP
+      port: 80
+      targetPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: astrum-postgres-service
+  namespace: astrum
+  labels:
+    app: astrum-postgres-service
+spec:
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432
+  selector:
+    app: astrum-postgres
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: astrum-back-ingress
+  namespace: astrum
+  annotations:
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: 50m
+    nginx.org/client-max-body-size: "50m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+spec:
+  rules:
+    - host: "astrum.66bit.ru"
+      http:
+        paths:
+          - pathType: Prefix
+            path: /
+            backend:
+              service:
+                name: astrum-front-service
+                port:
+                  number: 80
+          - pathType: Prefix
+            path: /api
+            backend:
+              service:
+                name: astrum-back-service
+                port:
+                  number: 80
+          - pathType: Prefix
+            path: /admin
+            backend:
+              service:
+                name: astrum-back-service
+                port:
+                  number: 80
+          - pathType: Prefix
+            path: /_framework
+            backend:
+              service:
+                name: astrum-back-service
+                port:
+                  number: 80
+          - pathType: Prefix
+            path: /_content
+            backend:
+              service:
+                name: astrum-back-service
+                port:
+                  number: 80
+          - pathType: Prefix
+            path: /Astrum.Api.styles.css
+            backend:
+              service:
+                name: astrum-back-service
+                port:
+                  number: 80
+          - pathType: Prefix
+            path: /_blazor
+            backend:
+              service:
+                name: astrum-back-service
+                port:
+                  number: 80
+          - pathType: Prefix
+            path: /adminStatic
+            backend:
+              service:
+                name: astrum-back-service
+                port:
+                  number: 80
+          - pathType: Prefix
+            path: /graphql
+            backend:
+              service:
+                name: astrum-back-service
+                port:
+                  number: 80
+          - pathType: Prefix
+            path: /swagger
+            backend:
+              service:
+                name: astrum-back-service
+                port:
+                  number: 80
+          - pathType: Prefix
+            path: /hangfire
+            backend:
+              service:
+                name: astrum-back-service
+                port:
+                  number: 80

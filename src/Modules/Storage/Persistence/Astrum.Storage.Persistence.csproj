@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+	<TargetFramework>net7.0</TargetFramework>
+	<TargetFrameworkVersion>7.0</TargetFrameworkVersion>
+	<ImplicitUsings>enable</ImplicitUsings>
+	<Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Migrations\**" />
+    <EmbeddedResource Remove="Migrations\**" />
+    <None Remove="Migrations\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\SharedLib\Persistence\Astrum.SharedLib.Persistence.csproj" />
+    <ProjectReference Include="..\DomainServices\Astrum.Storage.DomainServices.csproj" />
+    <ProjectReference Include="..\Domain\Astrum.Storage.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

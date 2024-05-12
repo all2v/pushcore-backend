@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+		<TargetFramework>net7.0</TargetFramework> 
+		<TargetFrameworkVersion>7.0</TargetFrameworkVersion>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="HotChocolate" Version="12.15.2" />
+        <PackageReference Include="HotChocolate.AspNetCore" Version="12.15.2" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\Infrastructure\Astrum.Infrastructure\Astrum.Infrastructure.csproj" />
+        <ProjectReference Include="..\Application\Astrum.News.Application.csproj" />
+        <ProjectReference Include="..\Backoffice\Astrum.News.Backoffice.csproj" />
+        <ProjectReference Include="..\DomainServices\Astrum.News.DomainServices.csproj" />
+        <ProjectReference Include="..\Domain\Astrum.News.Domain.csproj" />
+        <ProjectReference Include="..\Infrastructure\Astrum.News.Infrastructure.csproj" />
+        <ProjectReference Include="..\Persistence\Astrum.News.Persistence.csproj" />
+    </ItemGroup>
+
+</Project>

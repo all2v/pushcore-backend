@@ -1,0 +1,71 @@
+﻿@using Astrum.Account.Features.Registration.Commands.RegistrationApplicationUpdate
+@using Astrum.Account.Features.Registration
+@inject IRegistrationApplicationService _applicationService
+<Icon class="action-icon action-edit" Type="edit" Theme="outline" OnClick="@ShowModal" />
+
+<Modal
+    Visible="@_visible"
+    OnCancel="@OnCancel"
+    OnOk="@(async () => await OnFinish())"
+    OkText="@("Редактировать")"
+    CancelText="@("Отмена")"
+    AfterClose="async () => {
+        if (ApplicationUpdated.HasDelegate)
+        {
+            await ApplicationUpdated.InvokeAsync();
+        }
+    }">
+    <h4 style="margin-bottom: 30px; text-align: center;">Редактировать заявку</h4>
+    <Form 
+        LabelColSpan="6"
+        Model="@Model">
+        <FormItem Label="Фамилия">
+            <Input @bind-Value="Model.Surname" />
+        </FormItem>
+        <FormItem Label="Имя">
+            <Input @bind-Value="Model.Name" />
+        </FormItem>
+        <FormItem Label="Отчество">
+            <Input @bind-Value="Model.Patronymic" />
+        </FormItem>
+        <FormItem Label="Юзернейм">
+            <Input @bind-Value="Model.Username" />
+        </FormItem>
+        <FormItem Label="Номер телефона">
+            <Input @bind-Value="Model.PhoneNumber" />
+        </FormItem>
+        <FormItem Label="Почта">
+            <Input @bind-Value="Model.Email" />
+        </FormItem>
+    </Form>
+</Modal>
+
+@code {
+    bool _visible;
+    [Parameter] public RegistrationApplicationResponse Application { get; set; }
+    [Parameter] public EventCallback ApplicationUpdated { get; set; }
+    RegistrationApplicationUpdateCommand Model = new();
+
+    void ShowModal()
+    {
+        Model.Id = Application.Id;
+        Model.Name = Application.Name;
+        Model.Surname = Application.Surname;
+        Model.Patronymic = Application.Patronymic;
+        Model.Username = Application.Username;
+        Model.PhoneNumber = Application.PhoneNumber;
+        Model.Email = Application.Email;
+        _visible = true;
+    }
+
+    void OnCancel()
+    {
+        _visible = false;
+    }
+
+    async Task OnFinish()
+    {
+        var response = await _applicationService.UpdateAsync(Model);
+        _visible = false;
+    }
+}

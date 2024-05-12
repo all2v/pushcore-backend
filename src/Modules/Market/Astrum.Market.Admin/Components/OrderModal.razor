@@ -1,0 +1,84 @@
+﻿@using AntDesign
+@using Astrum.Market.Services
+@using Astrum.Market.ViewModels
+@using AutoMapper
+
+@inject IMarketOrderService _marketOrderService
+@inject IMapper _mapper
+@inject ILogAdminService _logger
+
+@{
+    RenderFragment footer = @<Template>
+                                @if (Order.Status == OrderStatus.Ordered)
+                                {
+                                    <Button OnClick="@(() => UpdateOrder(OrderStatus.Accepted))"
+                                            Type="primary"
+                                            Loading="@_loading">
+                                        Принять
+                                    </Button>
+                                    <Button OnClick="@(() => UpdateOrder(OrderStatus.Cancelled))">Отклонить</Button>
+                                }
+                            </Template>;
+}
+
+<Button Type="Primary" OnClick="ShowModal">Подробнее</Button>
+
+@if (_visible)
+{
+    <Modal Title="@("Описание заказа")"
+           Visible="true"
+           Footer="@footer"
+           OnCancel="@CloseModal">
+        <p>
+            <Text Strong>Имя покупателя:</Text>
+            <Text>@Order.User.Name</Text>
+        </p>
+        @if (!string.IsNullOrEmpty(Order.Comment))
+        {
+            <p>
+                <Text Strong>Комментарий покупателя:</Text>
+                <Text>@Order.Comment</Text>
+            </p>
+        }
+    
+    </Modal>
+}
+
+@code {
+    [Parameter] public MarketOrderFormResponse Order { get; set; } = new MarketOrderFormResponse();
+    [Parameter] public EventCallback OnChange { get; set; }
+
+    private MarketOrderFormRequest order = new MarketOrderFormRequest();
+    bool _visible = false;
+    bool _loading = false;
+
+    protected override Task OnInitializedAsync()
+    {
+        _mapper.Map(Order, order);
+        return Task.CompletedTask;
+    }
+
+    private void ShowModal()
+    {
+        _visible = true;
+    }
+
+    private async Task UpdateOrder(OrderStatus status)
+    {
+        order.Status = status;
+        var result = await _marketOrderService.Update(Order.Id, order);
+        CloseModal();
+        if (OnChange.HasDelegate)
+        {
+            await OnChange.InvokeAsync();
+        }
+        _logger.Log(status, result, "Статус заказа обновлён.", Logging.Entities.ModuleAstrum.Market);
+    }
+
+    private void CloseModal()
+    {
+        _visible = false;
+        StateHasChanged();
+    }
+
+}

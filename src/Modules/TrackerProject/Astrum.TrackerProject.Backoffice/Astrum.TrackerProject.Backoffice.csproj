@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Infrastructure\Astrum.Infrastructure.Shared\Astrum.Infrastructure.Shared.csproj" />
+    <ProjectReference Include="..\..\Logging\Core\Astrum.Logging.csproj" />
+    <ProjectReference Include="..\Astrum.TrackerProject.Application\Astrum.TrackerProject.Application.csproj" />
+  </ItemGroup>
+
+</Project>

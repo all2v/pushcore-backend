@@ -1,0 +1,67 @@
+﻿@if (Characteristics != null)
+{
+    foreach (var characteristic in Characteristics)
+    {
+        <Row>
+            @if (typeof(InventoryItemCreateRequest) == Type && characteristic.IsCustomField == false)
+            {
+                <GridCol Span="10">
+                    <div style="display:flex; margin-top: 31px;">
+                        <p class="fw-bolder" style="margin-right:15px;">Название: </p>
+                        <p class="col-sm-9">@characteristic.Name</p>
+                    </div>
+                </GridCol>
+            }
+            else
+            {
+                <GridCol Span="12">
+                    <FormItem ValidateStatus="FormValidateStatus.Validating" Label="Название" Style="margin-top: 30px;"
+                              Rules=@(new FormValidationRule[] { new FormValidationRule { Required = true, Message = "Название обязательно!" } })>
+                        <Input Placeholder="название" @bind-Value="characteristic.Name"></Input>
+                    </FormItem>
+                </GridCol>
+            }
+            
+            @if (Type != null && typeof(InventoryItemCreateRequest) == Type)
+            {
+                <GridCol Offset="1" Span="8">
+                    <FormItem Style="margin-top: 30px;" Label="Значение">
+                        <Input Placeholder="значение" @bind-Value="characteristic.Value"></Input>
+                    </FormItem>
+                </GridCol>
+            }
+            <GridCol Offset="1" Span="2">
+                <FormItem Style="margin-top: 30px;">
+                    <Button Icon="@IconType.Outline.MinusCircle" OnClick="() => DeleteCharacteristic(characteristic)"></Button>
+                </FormItem>
+            </GridCol>
+        </Row>
+    }
+}
+<Button Style="margin-bottom: 30px;" Icon="@IconType.Outline.PlusCircle" OnClick="() => AddCharacteristic()"></Button>
+@code {
+    [Parameter] public List<CharacteristicCreateRequest>? Characteristics { get; set; }
+    [Parameter] public Type? Type { get; set; }
+
+    public void AddCharacteristic()
+    {
+        if (Type != null && Type == typeof(InventoryItemCreateRequest))
+        {
+            Characteristics.Add(new CharacteristicCreateRequest
+            {
+                IsCustomField = true
+            });
+        }
+        else
+        {
+            Characteristics.Add(new CharacteristicCreateRequest());
+        }
+        StateHasChanged();
+    }
+
+    public void DeleteCharacteristic(CharacteristicCreateRequest characteristic)
+    {
+        Characteristics.Remove(characteristic);
+        StateHasChanged();
+    }
+}

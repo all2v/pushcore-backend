@@ -1,0 +1,22 @@
+variables:
+  # Расположение Dockerfile
+  DOCKER_FILE_LOCATION: .
+  # Название проекта
+  PROJECT_NAME: astrum_back
+  # Расположение docker-stack
+  DEVELOP_DOCKER_STACK_FILE: ./cicd/docker-stack.development.yml
+  TAG_LATEST: $CI_REGISTRY_IMAGE:latest
+
+stages:
+  - upload_nginx_configuration
+  - make_docker_image
+  - deploy
+
+include:
+  - project: 'urfu/templates'
+    ref: v1.1.0
+    file:
+      - 'upload_nginx_configuration.yml'
+      - 'make_docker_image.yml'
+      - 'deploy_to_development.yml'
+      - 'k8s_deploy_with_persistent_objs.yml'

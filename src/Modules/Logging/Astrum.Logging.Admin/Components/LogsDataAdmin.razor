@@ -1,0 +1,61 @@
+﻿@using Astrum.Logging.ViewModels.Filters
+@using Astrum.SharedLib.Common.Extensions
+@inject ILogAdminService service;
+
+<SearchingLogsDataAdmin OnEditFilteringAdmin=OnInitializedAsync FilterAdmin="FilterAdmin"></SearchingLogsDataAdmin>
+
+<Table @bind-PageIndex="pageIndex"
+       @bind-PageSize="pageSize"
+       DataSource="Logs"
+       Total="@(Logs?.TotalCount ?? 0)"
+       OnPageIndexChange="ChangeTableData"
+       OnPageSizeChange="ChangeTableData">
+    <RowTemplate Context="Log">
+        <Column TData="string"  Title="Уровень запроса">
+            @if (Log.LogLevel == LogLevel.Information)
+            {
+                <Icon Fill="#0066fe" Type="@IconType.Fill.InfoCircle" Height="30" Width="30" Theme="@IconThemeType.Outline"></Icon>
+                <span>Инфо</span>
+            }
+            else if (Log.LogLevel == LogLevel.Warning)
+            {
+                <Icon Fill="#edb828" Type="@IconType.Fill.Warning" Height="30" Width="30" Theme="@IconThemeType.Outline"></Icon>
+                <span>Предупреждение</span>
+            }
+            else if (Log.LogLevel == LogLevel.Error)
+            {
+                <Icon Fill="#e6160c" Type="@IconType.Fill.ExclamationCircle" Height="30" Width="30" Theme="@IconThemeType.Outline"></Icon>
+                <span>Ошибка</span>
+            }
+        </Column>
+        <Column TData="ModuleAstrum" Title="Модуль">@Log.Module.GetDisplayName()</Column>
+        <Column TData="DateTimeOffset" Title="Время запроса">@Log.DateCreated.ToString("dd/MM/yyyy HH:mm")</Column>
+        <Column Align="ColumnAlign.Center" TData="string" Title="Результат">
+            <div>
+                <Text Class="rounded bg-secondary bg-gradient p-2 text-white">@Log.Status.ToString()</Text>
+            </div>
+        </Column>
+        <Column TData="string" Title="Описание">@Log.Description</Column>
+        <Column Align="ColumnAlign.Center" TData="string" Title="Тело запроса" Width="250"><LogsDataAdminDetails Log="Log">@Log.BodyRequest</LogsDataAdminDetails></Column>
+        <Column Align="ColumnAlign.Center" TData="string" Title="Ответ запроса" Width="250"><LogsDataAdminDetails Log="Log">@Log.RequestResponse</LogsDataAdminDetails></Column>
+    </RowTemplate>
+</Table>
+
+@code {
+    [Parameter] public ModuleAstrum Module { get; set; }
+    [Parameter] public LogFilterAdmin? FilterAdmin { get; set; }
+    private IPagedList<LogAdminView> Logs { get; set; }
+    private int pageIndex = 1;
+    private int pageSize = 10;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ChangeTableData();
+    }
+
+    private async Task ChangeTableData()
+    {
+        Logs = await service.GetLogs(FilterAdmin, pageIndex, pageSize);
+    }
+
+}

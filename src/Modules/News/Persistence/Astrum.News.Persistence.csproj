@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+		<TargetFramework>net7.0</TargetFramework> 
+		<TargetFrameworkVersion>7.0</TargetFrameworkVersion>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+    
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="7.0.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\SharedLib\Persistence\Astrum.SharedLib.Persistence.csproj" />
+        <ProjectReference Include="..\..\Account\Application\Astrum.Account.Application.csproj" />
+        <ProjectReference Include="..\Application\Astrum.News.Application.csproj" />
+        <ProjectReference Include="..\DomainServices\Astrum.News.DomainServices.csproj" />
+        <ProjectReference Include="..\Domain\Astrum.News.Domain.csproj" />
+    </ItemGroup>
+
+</Project>

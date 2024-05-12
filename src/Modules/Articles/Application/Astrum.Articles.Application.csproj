@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+		<TargetFramework>net7.0</TargetFramework> 
+		<TargetFrameworkVersion>7.0</TargetFrameworkVersion>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="AutoMapper" Version="12.0.0" />
+        <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.0" />
+        <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="11.0.0" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="7.0.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Folder Include="Contracts" />
+        <Folder Include="EventHandlers" />
+        <Folder Include="Features\Commands\Articles\DeleteArticleCommand\" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\Infrastructure\Astrum.Infrastructure.Integrations.YouTrack\Astrum.Infrastructure.Integrations.YouTrack.csproj" />
+        <ProjectReference Include="..\..\..\SharedLib\Application\Astrum.SharedLib.Application.csproj" />
+        <ProjectReference Include="..\..\..\Infrastructure\Astrum.Infrastructure\Astrum.Infrastructure.csproj" />
+        <ProjectReference Include="..\..\Identity\Domain\Astrum.Identity.Domain.csproj" />
+        <ProjectReference Include="..\..\News\Application\Astrum.News.Application.csproj" />
+        <ProjectReference Include="..\..\News\Backoffice\Astrum.News.Backoffice.csproj" />
+        <ProjectReference Include="..\..\Storage\Application\Astrum.Storage.Application.csproj" />
+        <ProjectReference Include="..\DomainServices\Astrum.Articles.DomainServices.csproj" />
+        <ProjectReference Include="..\Domain\Astrum.Articles.Domain.csproj" />
+    </ItemGroup>
+
+</Project>

@@ -1,0 +1,31 @@
+﻿@page "/admin/widget"
+
+@inject IWidgetService _widgetService
+
+<PageTitle>Виджет</PageTitle>
+
+<h3>Виджеты</h3>
+<CreateWidget OnWidgetCreated="@AppendBanner" />
+<WidgetsList OnWidgetChanged="@SortWidgets" Widgets="Widgets" />
+
+@code {
+    public List<WidgetForm> Widgets = new List<WidgetForm>();
+
+    protected async override Task OnInitializedAsync()
+    {
+        var result = await _widgetService.GetWidgets();
+        Widgets = result.Data;
+        SortWidgets();
+    }
+
+    public void AppendBanner(WidgetForm widget)
+    {
+        Widgets.Add(widget);
+        SortWidgets();
+    }
+
+    public void SortWidgets()
+    {
+        Widgets = Widgets.OrderBy(widget => widget.DateCreated).ToList();
+    }
+}

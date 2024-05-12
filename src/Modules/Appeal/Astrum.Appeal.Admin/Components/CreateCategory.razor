@@ -1,0 +1,65 @@
+﻿@inject IAppealCategoryService _categoryService;
+@inject ILogAdminService _logger;
+
+<Button Style="margin-bottom: 20px;" Type="Primary" OnClick="ShowModal">Добавить категорию</Button>
+
+<Modal Visible="_visible" OnCancel="@HandleCancel" Footer="null">
+    <h3 class="text-center">Добавление категории</h3>
+    <Form Model="Category" OnFinish="OnFinish">
+        <FormItem Style="margin-top: 30px;">
+            <Input OnInput="@((ChangeEventArgs name) => OnChange(name))" Placeholder="Название категории" @bind-Value="@Category.Category"></Input>
+        </FormItem>
+        <FormItem>
+            <Button Type="@ButtonType.Primary" HtmlType="submit" Disabled="@_createButtonDisabled">
+                Создать
+            </Button>
+        </FormItem>
+        @if (CategoryAlreadyExists)
+        {
+            <p style="color: #ff4d4f">Такая категория уже существует!</p>
+        }
+    </Form>
+</Modal>
+
+@code {
+    [Parameter] public EventCallback OnCategoryCreated { get; set; }
+    public bool CategoryAlreadyExists;
+    public bool _visible;
+    public bool _createButtonDisabled;
+    public AppealCategoryForm Category = new AppealCategoryForm();
+
+    private void ShowModal()
+    {
+        _visible = true;
+        _createButtonDisabled = true;
+        CategoryAlreadyExists = false;
+        Category = new AppealCategoryForm();
+    }
+
+    private void HandleCancel()
+    {
+        _visible = false;
+    }
+
+    private async Task OnFinish(EditContext context)
+    {
+        var model = context.Model as AppealCategoryForm;
+        if (!String.IsNullOrWhiteSpace(model?.Category))
+        {
+            if (await _categoryService.CategoryAlreadyExists(model.Category))
+            {
+                CategoryAlreadyExists = true;
+                return;
+            }
+            var result = await _categoryService.CreateCategory(model.Category);
+            _logger.Log(model, result, "Создана категория.", Logging.Entities.ModuleAstrum.Appeal);
+            await OnCategoryCreated.InvokeAsync();
+            _visible = false;
+        }
+    }
+
+    private void OnChange(ChangeEventArgs name)
+    {
+        _createButtonDisabled = String.IsNullOrWhiteSpace(name.Value.ToString());
+    }
+}

@@ -1,0 +1,17 @@
+﻿@page "/admin/position"
+@inject IPositionsService _positionService
+
+<PageTitle>Должности</PageTitle>
+
+<h3>Должности</h3>
+<CreatePosition OnPositionCreated="OnInitializedAsync"/>
+<PositionTable OnPositionsChange="OnInitializedAsync" Positions="Positions"/>
+
+@code {
+    public List<PositionForm> Positions = new List<PositionForm>();
+
+    protected async override Task OnInitializedAsync()
+    {
+        Positions = await _positionService.GetPositions();
+    }
+}

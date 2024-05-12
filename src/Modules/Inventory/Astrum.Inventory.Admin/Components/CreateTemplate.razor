@@ -1,0 +1,115 @@
+﻿@using Astrum.Storage.ViewModels;
+@inject ITemplatesService _service
+@inject ILogAdminService _logger;
+
+<Button Style="margin-bottom: 20px;" Type="Primary" OnClick="ShowModal">Добавить категорию</Button>
+
+<Modal Width="1000" Visible="_visible" OnCancel="@HandleCancel" Footer="null">
+    <h3 class="text-center">Добавление категории</h3>
+    <Form Model="Template" OnFinish="OnFinish" ValidateMode="FormValidateMode.Rules">
+        <FormItem Required Label="Название категории" Style="margin-top: 30px;"
+                  Rules=@(new FormValidationRule[] { new FormValidationRule { Required = true, Message = "Название обязательно!" } })>
+            <Input BindOnInput Placeholder="категория" @bind-Value="@Template.Title"></Input>
+        </FormItem>
+
+        @if (TemplateAlreadyExists)
+        {
+            <p style="color: #ff4d4f">Такая категория уже существует!</p>
+        }
+
+        <FormItem Required Label="Изображение категории">
+            <InputFile id="fileInput" OnChange="UploadFile" hidden />
+            <Upload Name="file" FileList="fileList">
+                <label class="ant-btn" for="fileInput">
+                    <Icon Type="upload" />
+                    Прикрепить файл
+                </label>
+            </Upload>
+            <Spin Style="margin-top: 10px; margin-bottom: 10px;" Spinning=@_fileLoading></Spin>
+        </FormItem>
+
+        <CreateCharacteristics Characteristics="@Template.Characteristics"></CreateCharacteristics>
+
+        <FormItem>
+            <Button Disabled="_createButtonDisabled" Type="@ButtonType.Primary" HtmlType="submit">
+                Создать
+            </Button>
+        </FormItem>
+
+    </Form>
+</Modal>
+
+@code {
+    [Parameter] public EventCallback OnTemplateCreated { get; set; }
+
+    private FileForm Image { get; set; }
+    private TemplateCreateRequest Template;
+    List<UploadFileItem> fileList = new List<UploadFileItem>();
+
+    private bool TemplateAlreadyExists;
+    private bool _visible;
+    private bool _fileLoading;
+    private bool _createButtonDisabled =>
+    string.IsNullOrWhiteSpace(Template.Title) || Template.Image == null;
+
+    private void ShowModal()
+    {
+        _visible = true;
+        TemplateAlreadyExists = false;
+        Template = new TemplateCreateRequest();
+        Image = new FileForm();
+    }
+
+    private void HandleCancel()
+    {
+        _visible = false;
+    }
+
+    private async Task UploadFile(InputFileChangeEventArgs e)
+    {
+        _fileLoading = true;
+        StateHasChanged();
+
+        var file = e.File;
+        using var memoryStream = new MemoryStream();
+        await file.OpenReadStream(e.File.Size).CopyToAsync(memoryStream);
+        var imageBytes = memoryStream.ToArray();
+
+        Image = new FileForm()
+            {
+                ContentType = file.ContentType,
+                FileName = file.Name,
+                FileBytes = imageBytes,
+            };
+
+        fileList = new List<UploadFileItem>()
+        {
+            new UploadFileItem()
+            {
+                FileName = file.Name,
+                Size = file.Size
+            }
+        };
+
+        _fileLoading = false;
+        Template.Image = Image;
+        StateHasChanged();
+    }
+
+    private async Task OnFinish(EditContext context)
+    {
+        var model = context.Model as TemplateCreateRequest;
+        if (!String.IsNullOrWhiteSpace(model?.Title))
+        {
+            if (await _service.TemplateAlreadyExists(model.Title))
+            {
+                TemplateAlreadyExists = true;
+                return;
+            }
+            var result = await _service.CreateTemplate(model);
+            _logger.Log(model, result, "Создана категория.", Logging.Entities.ModuleAstrum.Inventory);
+            await OnTemplateCreated.InvokeAsync();
+            _visible = false;
+        }
+    }
+}

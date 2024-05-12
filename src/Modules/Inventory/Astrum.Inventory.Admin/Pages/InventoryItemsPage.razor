@@ -1,0 +1,17 @@
+﻿@inject IInventoryItemsService _service
+
+<PageTitle>Инвентарь</PageTitle>
+
+<h3>Товары</h3>
+<CreateInventoryItem OnInventoryItemCreated="OnInitializedAsync"></CreateInventoryItem>
+<InventoryItemsTable OnInventoryItemsChange="OnInitializedAsync" InventoryItems="InventoryItems"></InventoryItemsTable>
+
+@code {
+    public List<InventoryItemView> InventoryItems = new List<InventoryItemView>();
+
+    protected async override Task OnInitializedAsync()
+    {
+        InventoryItems = await _service.GetInventoryItems();
+    }
+}
+

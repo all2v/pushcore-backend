@@ -1,0 +1,40 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+		<TargetFramework>net7.0</TargetFramework> 
+		<TargetFrameworkVersion>7.0</TargetFrameworkVersion>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="FluentValidation" Version="11.4.0" />
+        <PackageReference Include="MassTransit" Version="8.0.8" />
+        <PackageReference Include="MediatR" Version="11.1.0" />
+        <PackageReference Include="MediatR.Contracts" Version="1.0.1" />
+        <PackageReference Include="Microsoft.AspNetCore.Http.Features" Version="2.2.0" />
+        <PackageReference Include="Microsoft.Extensions.Localization.Abstractions" Version="7.0.0" />
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Compile Remove="CQS.V2\**" />
+        <Compile Remove="Results.V1\**" />
+        <Compile Remove="Extensions\ResultExtensions.cs" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <EmbeddedResource Remove="CQS.V2\**" />
+        <EmbeddedResource Remove="Results.V1\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Remove="CQS.V2\**" />
+        <None Remove="Results.V1\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Folder Include="Helpers" />
+    </ItemGroup>
+
+</Project>

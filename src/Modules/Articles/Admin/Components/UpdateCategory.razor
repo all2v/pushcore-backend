@@ -1,0 +1,78 @@
+﻿@inject ICategoryService _categoryService
+@inject ILogAdminService _logger
+
+<Button Type="Primary" OnClick="ShowModal">Редактировать</Button>
+
+<Modal 
+    AfterClose="async () => { if (OnCategoryEdited.HasDelegate) 
+    { 
+        await OnCategoryEdited.InvokeAsync();
+    }}" 
+    Visible="_visible" 
+    OnCancel="@HandleCancel" 
+    Footer="null">
+    <h3 class="text-center">Редактирование категории</h3>
+    <Form Model="Category" OnFinish="OnFinish">
+        <FormItem Style="margin: 20px 0;">
+            <Input OnInput="@((ChangeEventArgs name) => OnChange(name))" Placeholder="Название категории" @bind-Value="Category.Name" TValue="string" />
+        </FormItem>
+        <FormItem>
+            <Button Type="@ButtonType.Primary" HtmlType="submit" Disabled=_updateButtonDisabled>
+                Редактировать
+            </Button>
+        </FormItem>
+        @if (_categoryAlreadyExists)
+        {
+            <p style="color: #ff4d4f">Такая категория уже существует!</p>
+        }
+    </Form>
+</Modal>
+
+@code {
+    [Parameter] public CategoryView Category { get; set; }
+    [Parameter] public EventCallback OnCategoryEdited { get; set; }
+    private bool _categoryAlreadyExists = false;
+    private bool _visible;
+    public bool _updateButtonDisabled = false;
+    private string _formerName; // прежнее название
+
+    public void ShowModal()
+    {
+        _formerName = Category.Name;
+        _categoryAlreadyExists = false;
+        _visible = true;
+    }
+
+    public void HandleCancel()
+    {
+        Category.Name = _formerName;
+        _visible = false;
+    }
+
+    public async Task OnFinish(EditContext context)
+    {
+        var model = context.Model as CategoryView;
+        if (!String.IsNullOrWhiteSpace(model?.Name))
+        {
+            if (model.Name.ToLower().Trim() == _formerName.ToLower().Trim())
+            {
+                _visible = false;
+                return;
+            }
+            if (await _categoryService.CategoryAlreadyExists(model.Name))
+            {
+                _categoryAlreadyExists = true;
+                return;
+            }
+            var result = await _categoryService.UpdateAsync(model);
+            _logger.Log(model, result, "Обновлена категория.", Logging.Entities.ModuleAstrum.Articles);
+            _visible = false;
+            //await OnCategoryEdited.InvokeAsync();
+        }
+    }
+
+    private void OnChange(ChangeEventArgs name)
+    {
+        _updateButtonDisabled = String.IsNullOrWhiteSpace(name.Value.ToString());
+    }
+}

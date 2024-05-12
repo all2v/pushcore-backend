@@ -1,0 +1,74 @@
+﻿.achievement-card {
+    padding-top: 50px;
+}
+
+div.autoShowHide {
+    height: 40px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+div.deleteAchievement {
+    display: flex;
+    justify-content: center;
+    margin-top: 5px;
+}
+
+.card {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 4px 30px rgba(95,94,231,.07);
+    letter-spacing: .5px;
+    margin-bottom: 30px;
+}
+
+.achievement-custom-card {
+    display: flex;
+    min-height: 200px;
+    overflow: visible;
+    padding: 60px 20px 20px;
+    position: relative;
+    width: 100%;
+}
+
+.achievement-card-avatar {
+    display: flex;
+    justify-content: center;
+    left: 50%;
+    position: absolute;
+    top: 0;
+    transform: translate(-50%, -50%);
+    transition: all .2s;
+    width: 50%;
+}
+
+.achievement-card-avatar:hover {
+    transform: translate(-50%,-50%) scale(1.1);
+}
+
+.achievement-card-icon-container {
+    align-items: center;
+    background-color: #cbcbef;
+    border-radius: 50%;
+    display: flex;
+    height: 100px;
+    justify-content: center;
+    padding: 5px;
+    position: relative !important;
+    width: 100px;
+}
+
+.achievement-card-icon {
+    border-radius: 50%;
+    height: 100%;
+    object-fit: cover;
+    width: 100%;
+}
+
+.achievement-card-title h4 {
+    color: #6362e7;
+    cursor: pointer;
+    height: 50px;
+    display: grid;
+    align-content: center;
+}

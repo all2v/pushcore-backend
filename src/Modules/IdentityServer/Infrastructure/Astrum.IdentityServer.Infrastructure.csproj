@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <TargetFrameworkVersion>7.0</TargetFrameworkVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="12.0.0" />
+    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.0" />
+    <PackageReference Include="Keycloak.AuthServices.Authentication" Version="1.5.0" />
+    <PackageReference Include="Keycloak.AuthServices.Authorization" Version="1.5.0" />
+    <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="11.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="7.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="EventHandlers" />
+    <Folder Include="Mappings" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Application\Astrum.IdentityServer.Application.csproj" />
+    <ProjectReference Include="..\DomainServices\Astrum.IdentityServer.DomainServices.csproj" />
+    <ProjectReference Include="..\Domain\Astrum.IdentityServer.Domain.csproj" />
+    <ProjectReference Include="..\Persistence\Astrum.IdentityServer.Persistence.csproj" />
+    <ProjectReference Include="..\..\..\Infrastructure\Astrum.Infrastructure.Persistence\Astrum.Infrastructure.Persistence.csproj" />
+    <ProjectReference Include="..\..\..\Infrastructure\Astrum.Infrastructure.Resources\Astrum.Infrastructure.Resources.csproj" />
+    <ProjectReference Include="..\..\..\Infrastructure\Astrum.Infrastructure.Shared\Astrum.Infrastructure.Shared.csproj" />
+    <ProjectReference Include="..\..\..\Infrastructure\Astrum.Infrastructure\Astrum.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>

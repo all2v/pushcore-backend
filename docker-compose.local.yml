@@ -1,0 +1,138 @@
+version: '3.8'
+services:
+  #  identity-db:
+  #    image: postgres:14.1-alpine
+  #    restart: unless-stopped
+  #    environment:
+  #      - POSTGRES_USER=postgres
+  #      - POSTGRES_PASSWORD=postgres
+  #    ports:
+  #      - '55432:5432'
+  #    volumes:
+  #      - identity-db_data:/var/lib/postgresql/data
+  application-db:
+    image: postgres:14.1-alpine
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=${APPLICATION_DB_USER}
+      - POSTGRES_PASSWORD=${APPLICATION_DB_PASSWORD}
+    ports:
+      - '55433:5432'
+    volumes:
+      - application-db_data:/var/lib/postgresql/data
+    networks:
+      - app-dev
+  
+  file-storage-s3:
+    extends:
+      file: docker-compose.yml
+      service: file-storage-s3
+    environment:
+      - MINIO_ACCESS_KEY=1e91d4b6fd7d9d29bc76f109
+      - MINIO_SECRET_KEY=dae6c868cc98c3aedf7932872fb823721cf0ba14e685f4531a4621f34e8d2c18
+    ports:
+      - '9000:9000'
+      - '9001:9001'
+    volumes:
+      - /mnt/minio/data:/data
+      - /mnt/minio/config:/root/.minio
+    command: server --address ":9000" --console-address ":9001" /data
+    networks:
+      - app-dev
+  
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: 'rabbitmq'
+    ports:
+      - 5672:5672
+      - 15672:15672
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq/
+      - rabbitmq_log:/var/log/rabbitmq
+    networks:
+      - rabbitmq_go_net
+        
+  keycloak-db:
+    extends:
+      file: docker-compose.yml
+      service: keycloak-db
+    environment:
+      - POSTGRES_DB=${KEYCLOAK_POSTGRESQL_DB}
+      - POSTGRES_USER=${KEYCLOAK_POSTGRESQL_USER}
+      - POSTGRES_PASSWORD=${KEYCLOAK_POSTGRESQL_PASSWORD}
+    ports:
+      - '45437:5432'
+    volumes:
+      - keycloak-db_data:/var/lib/postgresql/data
+
+  keycloak:
+    extends:
+      file: docker-compose.yml
+      service: keycloak
+    environment:
+      DB_VENDOR: postgres
+      DB_ADDR: keycloak-db
+      DB_DATABASE: ${KEYCLOAK_POSTGRESQL_DB}
+      DB_USER: ${KEYCLOAK_POSTGRESQL_USER}
+      DB_PASSWORD: ${KEYCLOAK_POSTGRESQL_PASSWORD}
+      KEYCLOAK_USER: ${KEYCLOAK_USER}
+      KEYCLOAK_PASSWORD: ${KEYCLOAK_PASSWORD}
+    ports:
+      - "28080:8080"
+  
+  api:
+    image: ${DOCKER_REGISTRY-}astrumapi
+    build:
+      context: .
+      dockerfile: /Dockerfile
+    restart: unless-stopped
+    ports:
+      - "50010:443"
+      - "50000:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=https://+:443;http://+:80
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=password
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx
+      - ASPNETCORE_HTTPS_PORT=50010
+    volumes:
+      - ~/.aspnet/https:/https:ro
+    depends_on:
+      - application-db
+    networks:
+      - app-dev
+
+  frontend:
+    image: lighthouse9/pushcore-frontend:latest
+    volumes:
+      - './:/app'
+      - '/app/node_modules'
+    ports:
+      - 3000:3000
+    stdin_open: true
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    command: npm start
+
+networks:
+  rabbitmq_go_net:
+    driver: bridge
+  app-dev:
+    driver: bridge
+
+
+volumes:
+  #  identity-db_data:
+  #    driver: local
+  # localstack-data:
+  #   driver: local
+  application-db_data:
+    driver: local
+  event-store-db_data:
+    driver: local
+  rabbitmq_data:
+    driver: local
+  rabbitmq_log:
+    driver: local
+  keycloak-db_data:
+    driver: local

@@ -1,0 +1,126 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+    <PropertyGroup>
+		<TargetFrameworkVersion>7.0</TargetFrameworkVersion>
+        <TargetFramework>net7.0</TargetFramework>
+        <UserSecretsId>8018e338-382a-47fc-b6e7-540e5506ae3f</UserSecretsId>
+        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+        <DockerComposeProjectPath>..\docker-compose.dcproj</DockerComposeProjectPath>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <PackageId>Astrum.Api</PackageId>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Compile Remove="logs\**" />
+        <Content Remove="logs\**" />
+        <EmbeddedResource Remove="logs\**" />
+        <None Remove="logs\**" />
+        <None Include="credentials.json" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="AntDesign" Version="0.13.3" />
+        <PackageReference Include="Ardalis.RouteAndBodyModelBinding" Version="0.0.2" />
+        <PackageReference Include="AspNet.Security.OAuth.GitLab" Version="7.0.0" />
+        <PackageReference Include="AutoMapper" Version="12.0.0" />
+        <PackageReference Include="Blazored.LocalStorage" Version="4.3.0" />
+        <PackageReference Include="FluentValidation" Version="11.4.0" />
+        <PackageReference Include="FluentValidation.AspNetCore" Version="11.2.2" />
+        <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.4.0" />
+        <PackageReference Include="Google.Apis.Auth" Version="1.60.0" />
+        <PackageReference Include="Google.Apis.Auth.AspNetCore3" Version="1.60.0" />
+        <PackageReference Include="Google.Apis.Calendar.v3" Version="1.60.0.3017" />
+        <PackageReference Include="Hangfire" Version="1.8.3" />
+        <PackageReference Include="Hangfire.PostgreSql" Version="1.19.13" />
+        <PackageReference Include="HotChocolate" Version="12.15.2" />
+        <PackageReference Include="HotChocolate.AspNetCore" Version="12.15.2" />
+        <PackageReference Include="HotChocolate.Subscriptions.Redis" Version="12.15.2" />
+        <PackageReference Include="IdentityModel" Version="6.0.0" />
+        <PackageReference Include="Keycloak.AuthServices.Authentication" Version="1.5.0" />
+        <PackageReference Include="MediatR" Version="11.1.0" />
+        <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="11.0.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="7.0.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="7.0.4" />
+        <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.1.0" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.0">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="7.0.0">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="7.0.0" />
+        <PackageReference Include="Microsoft.JSInterop" Version="7.0.0" />
+        <PackageReference Include="NLog" Version="5.1.2" />
+        <PackageReference Include="NLog.Database" Version="5.1.2" />
+        <PackageReference Include="NLog.Extensions.Logging" Version="5.2.2" />
+        <PackageReference Include="NLog.Web.AspNetCore" Version="5.2.2" />
+        <PackageReference Include="SharpRaven" Version="2.4.0" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
+        <PackageReference Include="Swashbuckle.AspNetCore.Newtonsoft" Version="6.4.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\Infrastructure\Astrum.Infrastructure.Integrations.YouTrack\Astrum.Infrastructure.Integrations.YouTrack.csproj" />
+        <ProjectReference Include="..\..\Modules\Account\Admin\Astrum.Account.Admin.csproj" />
+        <ProjectReference Include="..\..\Modules\Appeal\Astrum.Appeal.Admin\Astrum.Appeal.Admin.csproj" />
+        <ProjectReference Include="..\..\Modules\Articles\Admin\Astrum.Articles.Admin.csproj" />
+        <ProjectReference Include="..\..\Modules\Debts\Astrum.Debts.Startup\Astrum.Debts.Startup.csproj" />
+        <ProjectReference Include="..\..\Modules\Hrm\Recruting\Astrum.Recruting.Startup\Astrum.Recruting.Startup.csproj" />
+        <ProjectReference Include="..\..\Modules\IdentityServer\Startup\Astrum.IdentityServer.Startup.csproj" />
+        <ProjectReference Include="..\..\Modules\Inventory\Astrum.Inventory.Admin\Astrum.Inventory.Admin.csproj" />
+        <ProjectReference Include="..\..\Modules\Inventory\Astrum.Inventory.Startup\Astrum.Inventory.Startup.csproj" />
+        <ProjectReference Include="..\..\Modules\Learning\ITDictionary\Astrum.ITDictionary.Startup\Astrum.ITDictionary.Startup.csproj" />
+        <ProjectReference Include="..\..\Modules\Learning\CodeRev\Astrum.CodeRev.Startup\Astrum.CodeRev.Startup.csproj" />
+        <ProjectReference Include="..\..\Modules\Logging\Astrum.Logging.Admin\Astrum.Logging.Admin.csproj" />
+        <ProjectReference Include="..\..\Modules\Logging\Astrum.Logging.Startup\Astrum.Logging.Startup.csproj" />
+        <ProjectReference Include="..\..\Modules\Logging\Core\Astrum.Logging.csproj" />
+        <ProjectReference Include="..\..\Modules\Market\Astrum.Market.Admin\Astrum.Market.Admin.csproj" />
+        <ProjectReference Include="..\..\Modules\News\Admin\Astrum.News.Admin.csproj" />
+        <ProjectReference Include="..\..\Modules\Project\Astrum.Project.Admin\Astrum.Project.Admin.csproj" />
+        <ProjectReference Include="..\..\Modules\SampleData\Admin\Astrum.SampleData.Admin.csproj" />
+        <ProjectReference Include="..\..\Modules\Storage\Startup\Astrum.Storage.Startup.csproj" />
+		<ProjectReference Include="..\..\Modules\SampleData\Startup\Astrum.SampleData.Startup.csproj" />
+		<ProjectReference Include="..\..\Modules\Telegram\Astrum.Telegram.Admin\Astrum.Telegram.Admin.csproj" />
+		<ProjectReference Include="..\..\Modules\Telegram\Startup\Astrum.Telegram.Startup.csproj" />
+		<ProjectReference Include="..\..\Modules\TrackerProject\Astrum.TrackerProject.Admin\Astrum.TrackerProject.Admin.csproj" />
+		<ProjectReference Include="..\..\Modules\TrackerProject\Astrum.TrackerProject.Startup\Astrum.TrackerProject.Startup.csproj" />
+        <ProjectReference Include="..\..\SharedLib\Common\Astrum.SharedLib.Common.csproj" />
+        <ProjectReference Include="..\..\Infrastructure\Astrum.Infrastructure.Persistence\Astrum.Infrastructure.Persistence.csproj" />
+        <ProjectReference Include="..\..\Infrastructure\Astrum.Infrastructure.Resources\Astrum.Infrastructure.Resources.csproj" />
+        <ProjectReference Include="..\..\Infrastructure\Astrum.Infrastructure.Shared\Astrum.Infrastructure.Shared.csproj" />
+        <ProjectReference Include="..\..\Infrastructure\Astrum.Infrastructure\Astrum.Infrastructure.csproj" />
+        <ProjectReference Include="..\..\Modules\Account\Startup\Astrum.Account.Startup.csproj" />
+        <ProjectReference Include="..\..\Modules\Appeal\Startup\Astrum.Appeal.Startup.csproj" />
+        <ProjectReference Include="..\..\Modules\Articles\Startup\Astrum.Articles.Startup.csproj" />
+        <ProjectReference Include="..\..\Modules\Calendar\Startup\Astrum.Calendar.Startup.csproj" />
+        <ProjectReference Include="..\..\Modules\Cms\Startup\Astrum.Cms.Startup.csproj" />
+        <ProjectReference Include="..\..\Modules\Example\Startup\Astrum.Example.Startup.csproj" />
+        <ProjectReference Include="..\..\Modules\Identity\Startup\Astrum.Identity.Startup.csproj" />
+        <ProjectReference Include="..\..\Modules\Market\Startup\Astrum.Market.Startup.csproj" />
+        <ProjectReference Include="..\..\Modules\News\Startup\Astrum.News.Startup.csproj" />
+        <ProjectReference Include="..\..\Modules\Ordering\Startup\Astrum.Ordering.Startup.csproj" />
+        <ProjectReference Include="..\..\Modules\Project\Startup\Astrum.Project.Startup.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <_ContentIncludedByDefault Remove="Pages\_Host.cshtml" />
+      <_ContentIncludedByDefault Remove="wwwroot\css\bootstrap\bootstrap.min.css" />
+      <_ContentIncludedByDefault Remove="wwwroot\css\bootstrap\bootstrap.min.css.map" />
+      <_ContentIncludedByDefault Remove="wwwroot\css\open-iconic\FONT-LICENSE" />
+      <_ContentIncludedByDefault Remove="wwwroot\css\open-iconic\font\css\open-iconic-bootstrap.min.css" />
+      <_ContentIncludedByDefault Remove="wwwroot\css\open-iconic\font\fonts\open-iconic.eot" />
+      <_ContentIncludedByDefault Remove="wwwroot\css\open-iconic\font\fonts\open-iconic.otf" />
+      <_ContentIncludedByDefault Remove="wwwroot\css\open-iconic\font\fonts\open-iconic.svg" />
+      <_ContentIncludedByDefault Remove="wwwroot\css\open-iconic\font\fonts\open-iconic.ttf" />
+      <_ContentIncludedByDefault Remove="wwwroot\css\open-iconic\font\fonts\open-iconic.woff" />
+      <_ContentIncludedByDefault Remove="wwwroot\css\open-iconic\ICON-LICENSE" />
+      <_ContentIncludedByDefault Remove="wwwroot\css\open-iconic\README.md" />
+      <_ContentIncludedByDefault Remove="wwwroot\css\site.css" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="wwwroot" />
+    </ItemGroup>
+
+</Project>

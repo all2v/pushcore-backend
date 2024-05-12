@@ -1,0 +1,80 @@
+﻿@using Astrum.TrackerProject.Application.ViewModels
+@using AntDesign
+@using Astrum.Account.Features.Profile
+@using Astrum.Account.Services
+@using Astrum.TrackerProject.Application.Services
+@using Sakura.AspNetCore
+
+@inject IExternalUserService _externalUserService
+@inject IUserProfileService _userProfileService
+
+@if (loading || SynchronizationProcessing)
+{
+    <Spin/>
+}
+else
+{
+    <ExternalUserSearch OnEditFiltering="ChangeTableData" Summaries="@summaries"></ExternalUserSearch>
+
+    <Table DataSource="users"
+       Total="users.TotalCount"
+           @bind-PageIndex="pageIndex"
+           @bind-PageSize="pageSize"
+           OnPageIndexChange="@(() => ChangeTableData())"
+           OnPageSizeChange="@(() => ChangeTableData())">
+        <RowTemplate Context="user">
+            <Column TData="double" Title="Id" Sortable>
+                @user.Id
+            </Column>
+            <Column TData="string" Title="Пользователь" Sortable>
+                <Select TItem="UserProfileSummary"
+                        TItemValue="string"
+                        DataSource="@summaries"
+                        DefaultValue="@user?.UserName"
+                        ValueName="@nameof(UserProfileSummary.Username)"
+                        LabelName="@nameof(UserProfileSummary.NameWithSurname)"
+                        Placeholder="Пользователь"
+                        OnSelectedItemChanged="@((e) => OnSelectedItemChangedHandler(e, user))">
+                </Select>
+                @*@(User.UserProfileSummary?.NameWithSurname)*@
+            </Column>
+            <Column TData="double" Title="Почта" Sortable>
+                @user.Email
+            </Column>
+            @*<ActionColumn Width="200">
+            <EditUser User="@User" OnUserEdited="@OnUserEdited" />
+        </ActionColumn>*@
+        </RowTemplate>
+    </Table>
+}
+
+
+@code {
+    [Parameter] public bool SynchronizationProcessing { get; set; }
+
+    private IPagedList<ExternalUserForm> users;
+    private List<UserProfileSummary> summaries;
+
+    private int pageIndex = 1;
+    private int pageSize = 10;
+    private bool loading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        summaries = (await _userProfileService.GetAllUsersProfilesSummariesAsync()).Data;
+        await ChangeTableData();
+        loading = false;
+    }
+
+    private async Task ChangeTableData(ExternalUserFilter? filter = null)
+    {
+        users = (await _externalUserService.GetUserProfilesAsync(pageIndex, pageSize, filter)).Data;
+    }
+
+    private async Task OnSelectedItemChangedHandler(UserProfileSummary arg, ExternalUserForm user)
+    {
+        user.UserName = arg.Username;
+        await _externalUserService.UpdateUser(user);
+    }
+
+}

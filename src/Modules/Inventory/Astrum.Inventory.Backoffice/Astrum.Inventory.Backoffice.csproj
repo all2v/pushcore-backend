@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="GraphQL\**" />
+    <EmbeddedResource Remove="GraphQL\**" />
+    <None Remove="GraphQL\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="HotChocolate" Version="12.15.2" />
+    <PackageReference Include="HotChocolate.Data" Version="12.15.2" />
+    <PackageReference Include="HotChocolate.Subscriptions" Version="12.15.2" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Infrastructure\Astrum.Infrastructure.Shared\Astrum.Infrastructure.Shared.csproj" />
+    <ProjectReference Include="..\..\Account\Application\Astrum.Account.Application.csproj" />
+    <ProjectReference Include="..\Astrum.Inventory.Application\Astrum.Inventory.Application.csproj" />
+  </ItemGroup>
+
+</Project>

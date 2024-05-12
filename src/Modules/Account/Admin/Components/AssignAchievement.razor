@@ -1,0 +1,111 @@
+﻿@using System.ComponentModel.DataAnnotations;
+@using Astrum.Account.Features.Achievement.Commands.AchievementAssign;
+@using Astrum.Account.Application.Features.Achievement.Queries.GetAchievementsList
+@using Astrum.Account.Features.Achievement;
+@using Astrum.Account.Features.Achievement.Queries.GetAchievement;
+@using Astrum.Account.Features.Achievement.Queries.GetAchievementsByUser;
+@inject IUserProfileService _profileService
+@inject IMediator _mediator
+@inject ILogAdminService _logger
+
+<Button OnClick="ShowModal">Назначение достижений</Button>
+
+<Modal Visible="_visible" OnCancel="@HandleCancel" Footer="null">
+    <h3 class="text-center">Назначение достижений</h3>
+    <Form LabelColSpan="6" Model="command" OnFinish="OnFinish">
+        <FormItem Required Label="Пользователь" Style="margin: 20px 0;">
+            <Select
+                SortByLabel="SortDirection.Ascending"
+                OnSelectedItemChanged="OnUserSelected"
+                TItem="UserProfileSummary"
+                TItemValue="string"
+                LabelName="@nameof(UserProfileSummary.NameWithSurname)"
+                ValueName="@nameof(UserProfileSummary.Username)"
+                @bind-Value="@command.Username"
+                DataSource="Users"
+                EnableSearch/>
+        </FormItem>
+        <FormItem Required Label="Достижение" Style="margin: 20px 0;">
+            <Select
+                SortByLabel="SortDirection.Ascending"
+                OnSelectedItemChanged="OnAchievementSelected"
+                TItem="AchievementResponse"
+                TItemValue="Guid"
+                LabelName="@nameof(AchievementResponse.Name)"
+                ValueName="@nameof(AchievementResponse.Id)"
+                @bind-Value="@command.AchievementId"
+                DataSource="Achievements"
+                EnableSearch />
+        </FormItem>
+        @if (ValidationError)
+        {
+            <p style="color: #ff4d4f">@ValidationMessage</p>
+        }
+        <FormItem>
+            <Button Disabled="_buttonDisabled" Type="@ButtonType.Primary" HtmlType="submit">
+                Применить
+            </Button>
+        </FormItem>
+    </Form>
+</Modal>
+
+@code {
+    public bool _visible;
+    public AchievementAssignCommand command = new();
+    [Parameter] public List<UserProfileSummary> Users { get; set; }
+    [Parameter] public EventCallback OnBalanceChanged { get; set; }
+    public List<AchievementResponse> Achievements = new();
+    public List<AchievementResponse> UserAchievements = new();
+    public AchievementResponse SelectedAchievement;
+    public bool ValidationError;
+    public const string ValidationMessage = "Заполните обязательные поля!";
+    public bool _buttonDisabled =>
+    string.IsNullOrWhiteSpace(command.Username) || command.AchievementId == null;
+
+    public async Task ShowModal()
+    {
+        var achievementsQuery = new GetAchievementsListQuery();
+        Achievements = await _mediator.Send(achievementsQuery);
+        command = new();
+        ValidationError = false;
+        _visible = true;
+    }
+
+    public async Task OnUserSelected(UserProfileSummary user)
+    {
+        var userAchievementsQuery = new GetUserAchievementsByUsernameQuery(user.Username);
+        UserAchievements = await _mediator.Send(userAchievementsQuery);
+        Achievements = Achievements.ExceptBy(UserAchievements.Select(achievement => achievement.Id), achievement => achievement.Id).ToList();
+    }
+
+    public async Task OnAchievementSelected(AchievementResponse achievement)
+    {
+        var achievementQuery = new GetAchievementQuery(achievement.Id);
+        SelectedAchievement = await _mediator.Send(achievementQuery);
+    }
+
+    private void HandleCancel()
+    {
+        _visible = false;
+    }
+
+    private async Task OnFinish()
+    {
+        if (Validate(command))
+        {
+            var result = await _mediator.Send(command);
+            _logger.Log(command, result, "Присвоено достижение пользователю.", Logging.Entities.ModuleAstrum.Account);
+            _visible = false;
+        }
+    }
+
+    public bool Validate(AchievementAssignCommand command)
+    {
+        if (command.Username == null || command.AchievementId == Guid.Empty)
+        {
+            ValidationError = true;
+            return false;
+        }
+        return true;
+    }
+}

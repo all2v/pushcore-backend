@@ -1,0 +1,17 @@
+﻿@page "/admin/appealCategory"
+@inject IAppealCategoryService _categoryService;
+
+<PageTitle>Категории</PageTitle>
+
+<h3>Категории</h3>
+<CreateCategory OnCategoryCreated="OnInitializedAsync"/>
+<CategoryTable OnCategoriesChange="OnInitializedAsync" Categories="Categories" />
+
+@code {
+    public List<AppealCategoryForm> Categories = new List<AppealCategoryForm>();
+
+    protected async override Task OnInitializedAsync()
+    {
+        Categories = await _categoryService.GetAppealCategories();
+    }
+}

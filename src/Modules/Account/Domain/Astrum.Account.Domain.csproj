@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+		<TargetFramework>net7.0</TargetFramework> 
+		<TargetFrameworkVersion>7.0</TargetFrameworkVersion>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+    
+    <ItemGroup>
+        <Folder Include="Constants" />
+        <Folder Include="ValueObjects" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Ardalis.Specification" Version="6.1.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\..\SharedLib\Domain\Astrum.SharedLib.Domain.csproj" />
+      <ProjectReference Include="..\..\Identity\Domain\Astrum.Identity.Domain.csproj" />
+    </ItemGroup>
+
+</Project>

@@ -1,0 +1,28 @@
+﻿<Table DataSource="Users">
+    <RowTemplate Context="User">
+        <Column TData="string" Title="Логин" DataIndex="@nameof(User.Username)">
+            @User.Username
+        </Column>
+        <Column TData="string" Title="Имя">
+            @User.Surname @User.Name
+        </Column>
+        <Column TData="List<string>" Title="Роли">
+            @User.Roles?.Select(role => role.Role.Name)
+        </Column>
+        <ActionColumn Width="200">
+            <Button OnClick="() => ShowEditUserModal(User)">Редактировать</Button>
+        </ActionColumn>
+    </RowTemplate>
+</Table>
+
+<EditUserModal @ref="_editUserModal" />
+
+@code {
+    [Parameter] public List<UserProfileSummary> Users { get; set; }
+    public EditUserModal _editUserModal;
+
+    public void ShowEditUserModal(UserProfileSummary user)
+    {
+        _editUserModal.ShowModal(user);
+    }
+}

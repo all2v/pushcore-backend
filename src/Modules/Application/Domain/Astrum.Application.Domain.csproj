@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+	  <TargetFramework>net7.0</TargetFramework> 
+	  <TargetFrameworkVersion>7.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Folder Include="Constants" />
+    <Folder Include="Events" />
+    <Folder Include="ValueObjects" />
+    <Folder Include="Specifications" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\SharedLib\Domain\Astrum.SharedLib.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

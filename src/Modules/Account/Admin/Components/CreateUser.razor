@@ -1,0 +1,124 @@
+﻿@using Astrum.Identity.Models;
+@using Astrum.Identity.Repositories;
+@using Astrum.Identity.Specifications;
+@using Astrum.IdentityServer.Domain.Events;
+@using Astrum.IdentityServer.Domain.ViewModels;
+@using Astrum.IdentityServer.DomainServices.Features.Commands
+@using Astrum.IdentityServer.DomainServices.Services
+@using Microsoft.AspNetCore.Identity;
+@using System.Text.RegularExpressions;
+@inject IApplicationUserRepository _userRepository;
+@inject IMediator _mediator;
+@inject ILogAdminService _logger;
+@inject UserManager<ApplicationUser> _userManager
+
+<Button OnClick="@ShowModal">Создать пользователя</Button>
+
+<Modal Visible="@_visible" Footer="null" OnCancel="OnCancel">
+    <h3 class="text-center" style="margin-bottom: 20px;">Создание пользователя</h3>
+    <Form Model="User" OnFinish="OnFinish" LabelColSpan="6" ValidateMode="FormValidateMode.Rules">
+        <FormItem Required Label="Фамилия"
+                  Rules=@(new FormValidationRule[] { new FormValidationRule { Required = true, Message = "Фамилия обязательна!" } })>
+            <Input BindOnInput @bind-Value="@lastName" />
+        </FormItem>
+        <FormItem Required Label="Имя"
+                  Rules=@(new FormValidationRule[] { new FormValidationRule { Required = true, Message = "Имя обязательно!" } })>
+            <Input BindOnInput @bind-Value="@firstName" />
+        </FormItem>
+        <FormItem Required Label="Отчество"
+                  Rules=@(new FormValidationRule[] { new FormValidationRule { Required = true, Message = "Отчество обязательно!" } })>
+            <Input BindOnInput @bind-Value="@patronymic" />
+        </FormItem>
+        <FormItem Required Label="Юзернейм"
+                  Rules=@(new FormValidationRule[] { new FormValidationRule { Required = true, Message = "Юзернейм обязателен!" } })>
+            <Input BindOnInput @bind-Value="@User.UserName" />
+        </FormItem>
+        <FormItem Required Label="Пароль"
+                  Rules=@(new FormValidationRule[] { new FormValidationRule { Required = true, Message = "Пароль обязателен!" } })>
+            <Input BindOnInput Type="password" @bind-Value="@password" />
+            @if (IsCyrillic)
+            {
+                <p style="color: #ff4d4f">Пароль не может содержать кириллицы!</p>
+            }
+        </FormItem>
+        <FormItem Required Label="Почта"
+                  Rules=@(new FormValidationRule[] { new FormValidationRule { Required = true, Message = "Почта обязательна!" } })>
+            <Input BindOnInput @bind-Value="@User.Email" />
+        </FormItem>
+        <FormItem>
+            <Button Disabled="_createButtonDisabled" Type="@ButtonType.Primary" HtmlType="submit">
+                Создать
+            </Button>
+        </FormItem>
+    </Form>
+</Modal>
+
+@code {
+    bool _visible;
+    string password;
+    string firstName;
+    string lastName;
+    string patronymic;
+    bool IsCyrillic; 
+
+    [Parameter] public EventCallback OnUserCreated { get; set; }
+    ApplicationUser User = new();
+    public bool _createButtonDisabled =>
+    string.IsNullOrWhiteSpace(password) ||
+    string.IsNullOrWhiteSpace(firstName) ||
+    string.IsNullOrWhiteSpace(lastName) ||
+    string.IsNullOrWhiteSpace(patronymic) ||
+    string.IsNullOrWhiteSpace(User.Email) ||
+    string.IsNullOrWhiteSpace(User.UserName);
+
+    void ShowModal()
+    {
+        User = new();
+        _visible = true;
+    }
+
+    void OnCancel()
+    {
+        _visible = false;
+    }
+
+    async Task OnFinish()
+    {
+        User.EmailConfirmed = true;
+        User.Culture = "rus";
+        User.IsActive = true;
+        User.Name = lastName + " " + firstName + " " + patronymic;
+        if (Regex.IsMatch(password, @"\p{IsCyrillic}"))
+        {
+            IsCyrillic = true;
+            return;
+        }
+        await CreateUserIdentity(User);
+        await OnUserCreated.InvokeAsync();
+        _visible = false;
+    }
+
+    public async Task CreateUserIdentity(ApplicationUser user)
+    {
+        var creationResult = await _userManager.CreateAsync(user, password);
+        if (!creationResult.Succeeded) throw new Exception(creationResult.Errors.First().Description);
+        await CreateUserProfile(user);
+    }
+
+    public async Task CreateUserProfile(ApplicationUser userProfile)
+    {
+        var specification = new GetUserByUsernameSpec(userProfile.UserName);
+        var user = await _userRepository.FirstOrDefaultAsync(specification);
+        var mappedUser = new UserViewModel
+            {
+                Email = userProfile.Email,
+                Username = userProfile.UserName,
+                FirstName = firstName,
+                LastName = lastName,
+                Patronymic = patronymic,
+                Id = user.Id
+            };
+        _logger.Log("[Секретные данные]", SharedLib.Common.Results.Result.Success(mappedUser), "Создан пользователь.", Logging.Entities.ModuleAstrum.Account);
+        await _mediator.Publish(new ApplicationUserCreatedEvent(user.Id.ToString()!, 1, mappedUser, userProfile.UserName));
+    }
+}

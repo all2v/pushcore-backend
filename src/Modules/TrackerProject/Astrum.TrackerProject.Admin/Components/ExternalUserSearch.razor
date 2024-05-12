@@ -1,0 +1,56 @@
+﻿@using Microsoft.AspNetCore.Components
+@using Astrum.Logging.ViewModels.Filters
+@using AntDesign
+@using Astrum.Account.Features.Profile
+@using Astrum.TrackerProject.Application.ViewModels
+<Form Model="filter" OnFinish="OnFinish">
+    <Row Justify="start">
+        <GridCol Span="3">
+            <Select TItem="UserProfileSummary"
+                    TItemValue="string" 
+                    EnableSearch
+                    DataSource="@Summaries"
+                    ValueName="@nameof(UserProfileSummary.Username)"
+                    LabelName="@nameof(UserProfileSummary.NameWithSurname)"
+                    Placeholder="Пользователь"
+                    @bind-Value="@filter.UserName">
+            </Select>
+        </GridCol>
+        <GridCol Style="margin-left: 1%">
+            <FormItem Style="width: 150px;">
+                <Input @bind-Value=filter.Email Placeholder="Почта" />
+            </FormItem>
+        </GridCol>
+        <GridCol Style="margin-left: 1%">
+            <FormItem>
+                <Button HtmlType="submit" Type="@ButtonType.Primary" Icon="@IconType.Outline.Search" Shape="@ButtonShape.Circle" Size="middle"></Button>
+            </FormItem>
+        </GridCol>
+        <GridCol Style="margin-left: 1%">
+            <FormItem>
+                <Button Type="@ButtonType.Primary" Danger Icon="@IconType.Outline.Delete" OnClick="ClearFilter" Size="middle"></Button>
+            </FormItem>
+        </GridCol>
+    </Row>
+</Form>
+
+
+@code {
+    [Parameter] public EventCallback<ExternalUserFilter> OnEditFiltering{ get; set; }
+    [Parameter] public List<UserProfileSummary> Summaries { get; set; }
+
+    private ExternalUserFilter? filter = new ExternalUserFilter();
+
+    private async Task OnFinish(EditContext context)
+    {
+        var model = context.Model as ExternalUserFilter;
+        await OnEditFiltering.InvokeAsync(filter);
+    }
+
+    private async Task ClearFilter()
+    {
+        filter.UserName = null;
+        filter.Email = null;
+        await OnEditFiltering.InvokeAsync(filter);
+    }
+}
